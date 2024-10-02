@@ -11,8 +11,8 @@ export class BotRoutes {
 
 
 
-        router.get('/welcome', botController.getDataSheets)
-        router.put('/welcome', botController.handleWriteToSheet)
+        router.post('/newday', botController.getDataSheets)
+        router.post('/welcome', botController.handleWriteToSheet)
 
 
 

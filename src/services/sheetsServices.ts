@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import auth from '../data/sheetsConnection';
-import { getNextDate } from '../helpers/helpers';
+import { getNextDate, repeatDayNew } from '../helpers/helpers';
 import { envs } from '../config/envs';
 
 
@@ -8,7 +8,7 @@ const sheetId = envs.SPREADSHEET_ID
 
 export async function getLastRowValue() {
   const sheets = google.sheets({ version: 'v4', auth });
-  const spreadsheetId = sheetId; // ID de la hoja de cálculo
+  const spreadsheetId = '1bYiO91voc2Zh0foa9oSFB54n5AUyqjShVBxO-V6eFUg'; // ID de la hoja de cálculo
   const range = 'Sheet1!A:A'; // Columna A completa (solo para obtener el total de filas)
 
   try {
@@ -27,36 +27,35 @@ export async function getLastRowValue() {
       return null;
     }
 
-    // TODO:
-    // hacer que agregue el rango de horarios y se repita ese dia
     const lastRowValue = rows[0][rows[0].length - 1];
-    console.log(lastRowValue);
+    console.log(rows[0][rows[0].length - 1]);
+    
+    
+    // Sumar un día a la fecha obtenid
+    const dayAndTimetable = await repeatDayNew(lastRowValue)
+    
 
+    await appendRow(dayAndTimetable)
 
-    // Sumar un día a la fecha obtenida
-    const newDate = await getNextDate(lastRowValue);
-
-    await appendRow(newDate)
-
-    return lastRowValue;
   } catch (error) {
     console.error('Error al obtener el último valor de la fila:', error);
     throw error;
   }
 }
 
-async function appendRow(newDate: string) {
+async function appendRow(newDate: string[][]) {
+  
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId; // ID de la hoja de cálculo
   const range = 'Sheet1!A:A'; // Columna A para agregar un nuevo valor
-
+  
   try {
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
       range,
       valueInputOption: 'RAW', // Usa 'USER_ENTERED' si deseas que Google Sheets interprete la entrada
       requestBody: {
-        values: [[""],[""],[newDate]], // Formato de los datos a agregar
+        values: newDate,
       },
     });
     console.log('Nuevo día agregado:', response.data.updates!.updatedRange);

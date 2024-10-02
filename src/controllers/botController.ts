@@ -11,12 +11,6 @@ export class BotController {
         res.status(200).json(result)
     }
 
-    // public addAnotherDay = async(req: Request, res: Response) => {
-    //     const value = await getLastDay()
-    //     const result = repeatDayNew(value)
-    //     res.status(200).json(result)
-    // }
-
 
     public handleWriteToSheet = async(req: Request, res: Response) => {
         const values = repeatDay(); // Cambia esto según tus necesidades
