@@ -18,4 +18,8 @@ export class BotController {
         res.status(200).json(result);
     }
 
+    public addClientAndService = async(req:Request, res:Response) => {
+        
+    }
+
 }
