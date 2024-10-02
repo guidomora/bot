@@ -13,6 +13,7 @@ export class BotRoutes {
 
         router.post('/newday', botController.getDataSheets)
         router.post('/welcome', botController.handleWriteToSheet)
+        router.get('/rows', botController.addClientAndService)
 
 
 

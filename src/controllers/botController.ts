@@ -19,7 +19,9 @@ export class BotController {
     }
 
     public addClientAndService = async(req:Request, res:Response) => {
-        
+        const {date, time} = req.body
+        const result = await readSheet(date, time)
+        res.status(200).json(result)
     }
 
 }

@@ -67,23 +67,7 @@ async function appendRow(newDate: string[][]) {
 
 
 
-export async function readSheet() {
-  const sheets = google.sheets({ version: 'v4', auth })
-  const spreadsheetId = sheetId
-  const startRow = 3;
-  const range = `Sheet1!A${startRow}:A`; // Solo la columna A
 
-  try {
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range
-    })
-    const existingDates = response.data.values || []
-    return existingDates.map(row => row[0]);
-  } catch (error) {
-    console.log('Error al obtener las fechas:', error);
-  }
-}
 
 
 export async function writeToSheet(values: any) {
@@ -105,6 +89,74 @@ export async function writeToSheet(values: any) {
 
     // Solo devuelve los valores que se han escrito
     return values;
+  } catch (error) {
+    console.log(error);
+  }
+}
+// ---------- Clients and services -----------------
+
+export async function readSheet(date: string, time: string) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const spreadsheetId = sheetId; // ID de tu hoja de cálculo
+  const range = 'Sheet1!A:B'; // Rango para obtener las columnas A (fecha) y B (hora)
+  
+  try {
+    // Obtener los valores de las columnas A y B
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+      majorDimension: 'ROWS', // Obtener los valores por fila
+    });
+
+    const rows = response.data.values || [];
+
+    // Recorrer las filas y comparar los valores de la columna A y B
+    for (let i = 0; i < rows.length; i++) {
+      const [dateInSheet, timeInSheet] = rows[i];
+
+      // Verificar si la fecha y hora coinciden
+      if (dateInSheet === date && timeInSheet === time) {
+        const dataNumber = i + 1
+        // Devolver el número de la fila (recuerda que en Google Sheets la fila 1 tiene índice 1)
+        // Sumar 1 porque las filas en Google Sheets comienzan en 1
+        console.log(dataNumber);
+        
+        // TODO: funciona pero soo agrega en la cool C
+        const agregado = await addClientService(dataNumber, [["holaaaaa"]])
+        return agregado
+      }
+    }
+
+    // Si no se encontró ninguna coincidencia
+    console.log('No se encontró una fila que coincida con la fecha y hora.');
+    return null;
+  } catch (error) {
+    console.error('Error al obtener el número de fila:', error);
+    throw error;
+  }
+}
+
+
+
+
+export async function addClientService(rowNumber: number, values:string[][]) {
+  const sheets = google.sheets({ version: 'v4', auth })
+  const spreadsheetId = sheetId
+  const startRow = rowNumber; // Empezamos desde la fila 3, como en tu ejemplo
+  const range = `Sheet1!C${startRow}:D${startRow}`; // Rango dinámico
+  const valueInputOption = 'USER_ENTERED'
+  const requestBody = {values}
+
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range,
+      valueInputOption,
+      requestBody
+    });
+
+    // Solo devuelve los valores que se han escrito
+    return requestBody;
   } catch (error) {
     console.log(error);
   }
