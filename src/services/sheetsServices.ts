@@ -96,16 +96,19 @@ export async function writeToSheet(values: any) {
 // ---------- Clients and services -----------------
 
 export async function readSheet(date: string, time: string) {
+  // TODO: ver tema de la hora, si habria que hacer algo para que solo se ponga el numero (14) en vez de ej 14:00
+  // o que si solo recibe el numero, le agregue los 00 ---------- 
+
   const sheets = google.sheets({ version: 'v4', auth });
-  const spreadsheetId = sheetId; // ID de tu hoja de cálculo
-  const range = 'Sheet1!A:B'; // Rango para obtener las columnas A (fecha) y B (hora)
+  const spreadsheetId = sheetId; 
+  const range = 'Sheet1!A:B';
   
   try {
     // Obtener los valores de las columnas A y B
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
-      majorDimension: 'ROWS', // Obtener los valores por fila
+      majorDimension: 'ROWS',
     });
 
     const rows = response.data.values || [];
@@ -115,19 +118,18 @@ export async function readSheet(date: string, time: string) {
       const [dateInSheet, timeInSheet] = rows[i];
 
       // Verificar si la fecha y hora coinciden
-      if (dateInSheet === date && timeInSheet === time) {
+      if (dateInSheet === date.toLowerCase() && timeInSheet === time) {
         const dataNumber = i + 1
-        // Devolver el número de la fila (recuerda que en Google Sheets la fila 1 tiene índice 1)
         // Sumar 1 porque las filas en Google Sheets comienzan en 1
-        console.log(dataNumber);
+        // console.log(dataNumber);
         
-        // TODO: funciona pero soo agrega en la cool C
-        const agregado = await addClientService(dataNumber, [["holaaaaa"]])
+        // TODO: hacerlo dinamico
+        const test = ["roberto", 'corte de pelo']
+        const agregado = await addClientService(dataNumber, [test])
         return agregado
       }
     }
 
-    // Si no se encontró ninguna coincidencia
     console.log('No se encontró una fila que coincida con la fecha y hora.');
     return null;
   } catch (error) {
@@ -142,7 +144,7 @@ export async function readSheet(date: string, time: string) {
 export async function addClientService(rowNumber: number, values:string[][]) {
   const sheets = google.sheets({ version: 'v4', auth })
   const spreadsheetId = sheetId
-  const startRow = rowNumber; // Empezamos desde la fila 3, como en tu ejemplo
+  const startRow = rowNumber;
   const range = `Sheet1!C${startRow}:D${startRow}`; // Rango dinámico
   const valueInputOption = 'USER_ENTERED'
   const requestBody = {values}
@@ -155,7 +157,6 @@ export async function addClientService(rowNumber: number, values:string[][]) {
       requestBody
     });
 
-    // Solo devuelve los valores que se han escrito
     return requestBody;
   } catch (error) {
     console.log(error);
