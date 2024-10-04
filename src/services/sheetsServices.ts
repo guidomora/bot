@@ -29,11 +29,11 @@ export async function getLastRowValue() {
 
     const lastRowValue = rows[0][rows[0].length - 1];
     console.log(rows[0][rows[0].length - 1]);
-    
-    
+
+
     // Sumar un día a la fecha obtenid
     const dayAndTimetable = await repeatDayNew(lastRowValue)
-    
+
 
     await appendRow(dayAndTimetable)
 
@@ -44,11 +44,11 @@ export async function getLastRowValue() {
 }
 
 async function appendRow(newDate: string[][]) {
-  
+
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId; // ID de la hoja de cálculo
   const range = 'Sheet1!A:A'; // Columna A para agregar un nuevo valor
-  
+
   try {
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
@@ -95,14 +95,15 @@ export async function writeToSheet(values: any) {
 }
 // ---------- Clients and services -----------------
 
+// gets the row number with the date and time, and ads the customer and service
 export async function readSheet(date: string, time: string) {
   // TODO: ver tema de la hora, si habria que hacer algo para que solo se ponga el numero (14) en vez de ej 14:00
   // o que si solo recibe el numero, le agregue los 00 ---------- 
 
   const sheets = google.sheets({ version: 'v4', auth });
-  const spreadsheetId = sheetId; 
+  const spreadsheetId = sheetId;
   const range = 'Sheet1!A:B';
-  
+
   try {
     // Obtener los valores de las columnas A y B
     const response = await sheets.spreadsheets.values.get({
@@ -122,7 +123,7 @@ export async function readSheet(date: string, time: string) {
         const dataNumber = i + 1
         // Sumar 1 porque las filas en Google Sheets comienzan en 1
         // console.log(dataNumber);
-        
+
         // TODO: hacerlo dinamico
         const test = ["roberto", 'corte de pelo']
         const agregado = await addClientService(dataNumber, [test])
@@ -140,14 +141,14 @@ export async function readSheet(date: string, time: string) {
 
 
 
-
-export async function addClientService(rowNumber: number, values:string[][]) {
+// agrega un cliente y un servicio a las columnas
+export async function addClientService(rowNumber: number, values: string[][]) {
   const sheets = google.sheets({ version: 'v4', auth })
   const spreadsheetId = sheetId
   const startRow = rowNumber;
   const range = `Sheet1!C${startRow}:D${startRow}`; // Rango dinámico
   const valueInputOption = 'USER_ENTERED'
-  const requestBody = {values}
+  const requestBody = { values }
 
   try {
     await sheets.spreadsheets.values.update({
