@@ -6,6 +6,7 @@ import { envs } from '../config/envs';
 
 const sheetId = envs.SPREADSHEET_ID
 
+// gets the last row value and adds a new day
 export async function getLastRowValue() {
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = '1bYiO91voc2Zh0foa9oSFB54n5AUyqjShVBxO-V6eFUg'; // ID de la hoja de cálculo
@@ -43,6 +44,7 @@ export async function getLastRowValue() {
   }
 }
 
+// adds a new day
 async function appendRow(newDate: string[][]) {
 
   const sheets = google.sheets({ version: 'v4', auth });
@@ -69,7 +71,7 @@ async function appendRow(newDate: string[][]) {
 
 
 
-
+// ads 14 days from the actual day
 export async function writeToSheet(values: any) {
   const sheets = google.sheets({ version: 'v4', auth })
   const spreadsheetId = sheetId
@@ -141,7 +143,7 @@ export async function readSheet(date: string, time: string) {
 
 
 
-// agrega un cliente y un servicio a las columnas
+// ads a client and a service at the row number
 export async function addClientService(rowNumber: number, values: string[][]) {
   const sheets = google.sheets({ version: 'v4', auth })
   const spreadsheetId = sheetId
@@ -161,5 +163,60 @@ export async function addClientService(rowNumber: number, values: string[][]) {
     return requestBody;
   } catch (error) {
     console.log(error);
+  }
+}
+
+
+// Gets the rows with reservations
+export async function getReservationsRows () {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const spreadsheetId = sheetId;
+  const range = 'Sheet1!C:D';
+
+  try {
+    // Obtener los valores de las columnas A y B
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+      majorDimension: 'ROWS',
+    });
+
+    const rows = response.data.values || [];
+    const nextReservations:number[] =[]
+    
+    // starts at 1 because row 1 has the col name
+    for (let i = 1; i < rows.length; i++){
+      if (rows[i].length > 1) {
+        nextReservations.push(i+1)
+      }
+    }
+    
+
+    return nextReservations;
+  } catch (error) {
+    console.error('Error al obtener el número de fila:', error);
+    throw error;
+  }
+}
+
+// working
+export async function getAllReservations(rows:number[]) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const spreadsheetId = sheetId;
+  const range = 'Sheet1!A:B';
+
+  try {
+    // Obtener los valores de las columnas A y B
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+      majorDimension: 'ROWS',
+    });
+
+    const rows = response.data.values || [];
+
+  } catch (error) {
+    console.error('Error al obtener el número de fila:', error);
+    throw error;
   }
 }
