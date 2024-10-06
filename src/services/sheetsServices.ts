@@ -60,7 +60,7 @@ async function appendRow(newDate: string[][]) {
         values: newDate,
       },
     });
-    console.log('Nuevo día agregado:', response.data.updates!.updatedRange);
+    return response
   } catch (error) {
     console.error('Error al agregar un nuevo día a la hoja:', error);
     throw error;
@@ -95,10 +95,15 @@ export async function writeToSheet(values: any) {
     console.log(error);
   }
 }
+
+
 // ---------- Clients and services -----------------
 
+// ADD
+
 // gets the row number with the date and time, and ads the customer and service
-export async function readSheet(date: string, time: string) {
+export async function addReservation(date: string, time: string, customer:string, service:string) {
+
   // TODO: ver tema de la hora, si habria que hacer algo para que solo se ponga el numero (14) en vez de ej 14:00
   // o que si solo recibe el numero, le agregue los 00 ---------- 
 
@@ -107,7 +112,6 @@ export async function readSheet(date: string, time: string) {
   const range = 'Sheet1!A:B';
 
   try {
-    // Obtener los valores de las columnas A y B
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
@@ -121,13 +125,11 @@ export async function readSheet(date: string, time: string) {
       const [dateInSheet, timeInSheet] = rows[i];
 
       // Verificar si la fecha y hora coinciden
-      if (dateInSheet === date.toLowerCase() && timeInSheet === time) {
+      if (dateInSheet === date && timeInSheet === time) {
         const dataNumber = i + 1
         // Sumar 1 porque las filas en Google Sheets comienzan en 1
-        // console.log(dataNumber);
 
-        // TODO: hacerlo dinamico
-        const test = ["roberto", 'corte de pelo']
+        const test = [customer, service]
         const agregado = await addClientService(dataNumber, [test])
         return agregado
       }
@@ -148,7 +150,7 @@ export async function addClientService(rowNumber: number, values: string[][]) {
   const sheets = google.sheets({ version: 'v4', auth })
   const spreadsheetId = sheetId
   const startRow = rowNumber;
-  const range = `Sheet1!C${startRow}:D${startRow}`; // Rango dinámico
+  const range = `Sheet1!C${startRow}:D${startRow}`;
   const valueInputOption = 'USER_ENTERED'
   const requestBody = { values }
 
@@ -166,15 +168,15 @@ export async function addClientService(rowNumber: number, values: string[][]) {
   }
 }
 
+// READ
 
-// Gets the rows with reservations
+// Gets the rows and ALL the reservations
 export async function getReservationsRows () {
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId;
   const range = 'Sheet1!C:D';
 
   try {
-    // Obtener los valores de las columnas A y B
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
@@ -182,7 +184,7 @@ export async function getReservationsRows () {
     });
 
     const rows = response.data.values || [];
-    const nextReservations:number[] =[]
+    const nextReservations:number[] =[] // rows wth reservations
     
     // starts at 1 because row 1 has the col name
     for (let i = 1; i < rows.length; i++){
@@ -192,21 +194,49 @@ export async function getReservationsRows () {
     }
     
 
-    return nextReservations;
+    return getAllReservations(nextReservations);
   } catch (error) {
     console.error('Error al obtener el número de fila:', error);
     throw error;
   }
 }
 
-// working
-export async function getAllReservations(rows:number[]) {
+// gets the row content
+export async function getAllReservations(rowsNumbers:number[]) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const spreadsheetId = sheetId;
+  
+  try {
+    const rowContent:string[][] = []
+
+    for (const rowNumber of rowsNumbers ) {
+      const range = `Sheet1!A${rowNumber}:D${rowNumber}`
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+        majorDimension:'ROWS'
+      })
+      const row:string[][] = res.data.values || [];
+      if (row.length > 0) {
+        rowContent.push(row[0]);  // Añadir la fila al array de resultados
+      }
+    }
+    return rowContent
+  } catch (error) {
+    console.error('Error al obtener el contenido de las filas:', error);
+    throw error;
+  }
+}
+
+// 
+// TODO:
+export async function getFreeHoursDay(date: string) {
+
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId;
   const range = 'Sheet1!A:B';
 
   try {
-    // Obtener los valores de las columnas A y B
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
@@ -215,8 +245,49 @@ export async function getAllReservations(rows:number[]) {
 
     const rows = response.data.values || [];
 
+    // Recorrer las filas y comparar los valores de la columna A y B
+    for (let i = 0; i < rows.length; i++) {
+      const [dateInSheet, timeInSheet] = rows[i];
+
+      // Verificar si la fecha y hora coinciden
+      if (dateInSheet === date) {
+        const dataNumber = i + 1
+        // Sumar 1 porque las filas en Google Sheets comienzan en 1
+
+        const liberado = await getFreeHoursRow([dataNumber])
+      }
+    }
+
+    console.log('No se encontró una fila que coincida con la fecha y hora.');
+    return null;
   } catch (error) {
     console.error('Error al obtener el número de fila:', error);
+    throw error;
+  }
+}
+
+export async function getFreeHoursRow(rowsNumbers:number[]) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const spreadsheetId = sheetId;
+  
+  try {
+    const rowContent:string[][] = []
+
+    for (const rowNumber of rowsNumbers ) {
+      const range = `Sheet1!A${rowNumber}:D${rowNumber}`
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+        majorDimension:'ROWS'
+      })
+      const row:string[][] = res.data.values || [];
+      if (row.length > 0) {
+        rowContent.push(row[0]);  // Añadir la fila al array de resultados
+      }
+    }
+    return rowContent
+  } catch (error) {
+    console.error('Error al obtener el contenido de las filas:', error);
     throw error;
   }
 }

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getLastRowValue, getReservationsRows, readSheet, writeToSheet } from "../services/sheetsServices";
+import { addReservation, getLastRowValue, getReservationsRows, writeToSheet } from "../services/sheetsServices";
 import { repeatDay } from "../helpers/helpers";
 
 
@@ -24,8 +24,8 @@ export class BotController {
     }
 
     public addClientAndService = async(req:Request, res:Response) => {
-        const {date, time} = req.body
-        const result = await readSheet(date, time)
+        const {date, time, customer, service} = req.body
+        const result = await addReservation(date, time, customer, service)
         res.status(200).json(result)
     }
 

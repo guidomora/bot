@@ -6,8 +6,8 @@ export const createDaysForTwoWeeks = () => {
   const closedDay = "domingo" // XXXXX
 
   const days = [];
-  const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-  const daysOfWeek = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  const daysOfWeek = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
 
   for (let i = 0; i < 14; i++) {
     const day = new Date();
@@ -52,7 +52,7 @@ export const repeatDay = () => {
 
 export const getNextDate = async (date: string) => {
   const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-  const daysOfWeek = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  const daysOfWeek = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
 
   // Extraer el día y el mes de la fecha recibida
   const [onlyDay, dayNumber, monthName] = date.split(" ");
@@ -84,7 +84,7 @@ export const getNextDate = async (date: string) => {
 export const repeatDayNew = async (date: string) => {
   const day = await getNextDate(date)
   const days: string[][] = [];
-  const scheduleList: string[] = ["", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", ""];
+  const scheduleList: string[] = ["", "", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", ""];
 
   // Llenamos el array con los días y el horario para cada fila
   scheduleList.forEach(schedule => {
