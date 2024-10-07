@@ -1,9 +1,7 @@
 import { envs } from "./config/envs";
-// import { createDay, createDaysForTwoWeeks, repeatDay, repeatDayNew } from "./helpers/helpers";
-// import { writeToSheet } from "./data/sheetsConnection";
 import { AppRoutes } from "./routes/app-routes";
 import { Server } from "./server/server";
-import { getLastRowValue } from "./services/sheetsServices";
+
 
 (() => {
     main()

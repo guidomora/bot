@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { addReservation, getFreeHoursDay, getLastRowValue, getReservationsRows, writeToSheet } from "../services/sheetsServices";
 import { repeatDay } from "../helpers/helpers";
+import { getLastRowValue, writeToSheet } from "../services/days/daysService";
+import { addReservation, getFreeHoursDay, getReservationsRows } from "../services/reservations/reservationService";
 
 
 
