@@ -9,7 +9,7 @@ const sheetId = envs.SPREADSHEET_ID
 // gets the last row value and adds a new day
 export async function getLastRowValue() {
   const sheets = google.sheets({ version: 'v4', auth });
-  const spreadsheetId = '1bYiO91voc2Zh0foa9oSFB54n5AUyqjShVBxO-V6eFUg'; // ID de la hoja de cálculo
+  const spreadsheetId = sheetId; // ID de la hoja de cálculo
   const range = 'Sheet1!A:A'; // Columna A completa (solo para obtener el total de filas)
 
   try {
@@ -228,13 +228,14 @@ export async function getAllReservations(rowsNumbers:number[]) {
   }
 }
 
-// 
-// TODO:
+
+// You can get the free hours on the selected date
 export async function getFreeHoursDay(date: string) {
 
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId;
   const range = 'Sheet1!A:B';
+  let freeHours:string[][] = []
 
   try {
     const response = await sheets.spreadsheets.values.get({
@@ -247,25 +248,35 @@ export async function getFreeHoursDay(date: string) {
 
     // Recorrer las filas y comparar los valores de la columna A y B
     for (let i = 0; i < rows.length; i++) {
-      const [dateInSheet, timeInSheet] = rows[i];
+      const [dateInSheet] = rows[i];
 
-      // Verificar si la fecha y hora coinciden
+      // Verificar si la fecha coincide
       if (dateInSheet === date) {
-        const dataNumber = i + 1
-        // Sumar 1 porque las filas en Google Sheets comienzan en 1
+        const dataNumber = i + 1;
 
-        const liberado = await getFreeHoursRow([dataNumber])
+        // Obtener las filas que coinciden con la fecha y que no tienen cliente asignado
+        const free = await getFreeHoursRow([dataNumber]);
+
+        // Filtrar solo las filas que no están vacías
+        if (free.length > 0 && free[0].length > 0) {
+          freeHours = freeHours.concat(free);
+        }
       }
     }
 
-    console.log('No se encontró una fila que coincida con la fecha y hora.');
-    return null;
+    if (freeHours.length === 0) {
+      console.log('No se encontraron horarios libres para esa fecha.');
+    }
+
+    
+    return freeHours;
   } catch (error) {
     console.error('Error al obtener el número de fila:', error);
     throw error;
   }
 }
 
+// With que row number gets the hours that are free
 export async function getFreeHoursRow(rowsNumbers:number[]) {
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId;
@@ -281,7 +292,8 @@ export async function getFreeHoursRow(rowsNumbers:number[]) {
         majorDimension:'ROWS'
       })
       const row:string[][] = res.data.values || [];
-      if (row.length > 0) {
+      
+      if (row[0][2] == undefined && row.length > 0)  {
         rowContent.push(row[0]);  // Añadir la fila al array de resultados
       }
     }

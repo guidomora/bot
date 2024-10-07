@@ -14,7 +14,8 @@ export class BotRoutes {
         router.post('/newday', botController.getDataSheets)
         router.post('/welcome', botController.handleWriteToSheet)
         router.get('/rows', botController.addClientAndService)
-        router.get('/nextReservations', botController.getNextReservations)
+        router.get('/nextReservations', botController.getAllReservations)
+        router.get('/freeDay', botController.getFreeHoursInDay)
 
 
 
