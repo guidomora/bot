@@ -144,7 +144,6 @@ export async function getReservationsForNextDays(daysCount: number) {
   const reservationRanges: string[] = [];
   
   try {
-    // Obtener las filas de las columnas A y D (A para la fecha, D para servicio)
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: 'Sheet1!A:D', // Incluye la columna A (fecha)
@@ -153,22 +152,24 @@ export async function getReservationsForNextDays(daysCount: number) {
 
     const rows = response.data.values || [];
 
-    // Obtener la fecha actual y la fecha final del rango de días
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalizar la fecha actual, quitando la hora
 
     const endDate = new Date(today);
     endDate.setDate(today.getDate() + daysCount); // Sumar los días al rango
 
-    // Buscar las filas que contienen reservas dentro del rango de fechas
     for (let i = 1; i < rows.length; i++) {
       const [dateInSheet] = rows[i]; // Tomamos la fecha de la columna A
-      const reservationDate = new Date(dateInSheet);
+      const reservationDate = new Date(dateInSheet); // TODO: ERROR ------------------------------
+      console.log(dateInSheet);
+      
 
       // Verificar que la fecha esté entre hoy y la fecha límite (inclusivo)
       if (reservationDate >= today && reservationDate <= endDate) {
         const rowNumber = i + 1;
         reservationRanges.push(`Sheet1!A${rowNumber}:D${rowNumber}`);
+
+        
       }
     }
 
@@ -346,7 +347,6 @@ export async function deleteReservation(date: string, time: string) {
   const range = 'Sheet1!A:B';
 
   try {
-    // Obtener todas las filas en las columnas A y B (fecha y hora)
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
@@ -355,7 +355,6 @@ export async function deleteReservation(date: string, time: string) {
 
     const rows = response.data.values || [];
 
-    // Recorrer las filas y comparar los valores de la columna A y B
     for (let i = 0; i < rows.length; i++) {
       const [dateInSheet, timeInSheet] = rows[i];
 
