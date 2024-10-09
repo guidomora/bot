@@ -1,3 +1,18 @@
+export const createOneDay = () => {
+  const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  const daysOfWeek = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+  const today = new Date()
+  const dayName = daysOfWeek[today.getDay()]
+  const dayNumber = today.getDate()
+  const monthName = months[today.getMonth()]
+  
+
+  const day = `${dayName} ${dayNumber} ${monthName}`
+  console.log(day);
+  return day
+}
+
+
 
 
 // ------------------------- 14 days-------------------------------

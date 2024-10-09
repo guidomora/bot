@@ -1,4 +1,5 @@
 import { envs } from "./config/envs";
+import { createOneDay } from "./helpers/helpers";
 import { AppRoutes } from "./routes/app-routes";
 import { Server } from "./server/server";
 
@@ -13,6 +14,8 @@ async function main() {
         public_path: envs.PUBLIC_PATH,
         routes: AppRoutes.routes
     })
+
+    
     server.start()
 }
 

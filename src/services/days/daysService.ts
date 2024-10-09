@@ -96,3 +96,154 @@ export async function writeToSheet(values: any) {
         console.log(error);
     }
 }
+
+
+export async function blockDayReservation(date: string) {
+    const sheets = google.sheets({ version: 'v4', auth });
+    const spreadsheetId = sheetId;
+    const range = 'Sheet1!A:B';
+  
+    try {
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+        majorDimension: 'ROWS',
+      });
+  
+      const rows = response.data.values || [];
+      const requests = []; // Array para almacenar las solicitudes de actualización
+  
+      // Recorrer las filas y comparar los valores de la columna A
+      for (let i = 0; i < rows.length; i++) {
+        const [dateInSheet] = rows[i];
+  
+        // Verificar si la fecha coincide
+        if (dateInSheet === date) {
+          const rowNumber = i + 1; 
+          
+          requests.push({
+            updateCells: {
+              range: {
+                sheetId: 0,
+                startRowIndex: rowNumber - 1,
+                endRowIndex: rowNumber,
+                startColumnIndex: 2, 
+                endColumnIndex: 4 
+              },
+              rows: [
+                {
+                  values: [
+                    { userEnteredValue: { stringValue: "No disponible" } }, // C
+                    { userEnteredValue: { stringValue: "No disponible" } },  // D
+                  ]
+                }
+              ],
+              fields: 'userEnteredValue'
+            }
+          });
+        }
+      }
+  
+      // Si hay solicitudes de actualización, ejecutar batchUpdate
+      if (requests.length > 0) {
+        const batchUpdateRequest = { requests };
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId,
+          requestBody: batchUpdateRequest,
+        });
+        console.log(`Día ${date} actualizado a 'No disponible' en las filas correspondientes.`);
+        return { date };
+      } else {
+        console.log('No se encontró ninguna fila que coincida con la fecha.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error al bloquear la reserva:', error);
+      throw error;
+    }
+  }
+  
+  
+  export async function blockHoursRange(date: string, startTime: string, endTime: string) {
+    const sheets = google.sheets({ version: 'v4', auth });
+    const spreadsheetId = sheetId;
+    const range = 'Sheet1!A:B';
+  
+    try {
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+        majorDimension: 'ROWS',
+      });
+  
+      const rows = response.data.values || [];
+      const requests = [];
+  
+      // Función para convertir una hora en formato "HH:mm" a minutos totales, para que la comparacion sea sencilla
+      const timeToMinutes = (time: string) => {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+      };
+  
+      // Convertir el rango de horas a minutos
+      const startMinutes = timeToMinutes(startTime);
+      const endMinutes = timeToMinutes(endTime);
+      console.log(startMinutes, endMinutes);
+      
+  
+      for (let i = 0; i < rows.length; i++) {
+        const [dateInSheet, timeInSheet] = rows[i];
+  
+        if (dateInSheet === date) {
+          const timeInMinutes = timeToMinutes(timeInSheet);
+  
+          if (timeInMinutes >= startMinutes && timeInMinutes <= endMinutes) {
+            const rowNumber = i + 1;
+  
+            // Agregar la solicitud de actualización para esta fila
+            requests.push({
+              updateCells: {
+                range: {
+                  sheetId: 0, 
+                  startRowIndex: rowNumber - 1,
+                  endRowIndex: rowNumber,
+                  startColumnIndex: 2, //C 
+                  endColumnIndex: 4 //D
+                },
+                rows: [
+                  {
+                    values: [
+                      { userEnteredValue: { stringValue: "No disponible" } },
+                      { userEnteredValue: { stringValue: "No disponible" } },
+                    ]
+                  }
+                ],
+                fields: 'userEnteredValue'
+              }
+            });
+          }
+        }
+      }
+  
+      // Si hay solicitudes de actualización, ejecutar batchUpdate
+      if (requests.length > 0) {
+        const batchUpdateRequest = { requests };
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId,
+          requestBody: batchUpdateRequest,
+        });
+  
+        console.log(`Horas de ${startTime} a ${endTime} bloqueadas para el día ${date}.`);
+        return { date, startTime, endTime };
+      } else {
+        console.log('No se encontraron filas que coincidan con la fecha y el rango de horas.');
+        return null;
+      }
+  
+      
+    } catch (error) {
+      console.error('Error al bloquear las horas:', error);
+      throw error;
+    }
+  }
+  

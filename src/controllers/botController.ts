@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { repeatDay } from "../helpers/helpers";
-import { getLastRowValue, writeToSheet } from "../services/days/daysService";
-import { addReservation, getFreeHoursDay, getReservationsRows } from "../services/reservations/reservationService";
+import { blockDayReservation, blockHoursRange, getLastRowValue, writeToSheet } from "../services/days/daysService";
+import { addReservation, deleteReservation, getDayReservationsRows, getFreeHoursDay, getReservationsForNextDays, getReservationsRows } from "../services/reservations/reservationService";
 
 
 
@@ -23,6 +23,10 @@ export class BotController {
         res.status(200).json(result)
     }
 
+    public allReservationsToday = async (req:Request, res:Response) => {
+        const result = await getDayReservationsRows()
+        res.status(200).json(result)
+    }
 
     public handleWriteToSheet = async(req: Request, res: Response) => {
         const values = repeatDay(); // Cambia esto según tus necesidades
@@ -35,5 +39,31 @@ export class BotController {
         const result = await addReservation(date, time, customer, service)
         res.status(200).json(result)
     }
+
+    public deleteReservation = async (req:Request, res:Response) => {
+        const {date, time} = req.body
+        const result = await deleteReservation(date, time)
+        res.status(200).json(result)
+    }
+
+    public blockDay = async (req:Request, res:Response) => {
+        const {date} = req.body
+        const result = await blockDayReservation(date)
+        res.status(200).json(result)
+    }
+
+    public blockRange = async (req:Request, res:Response) => {
+        const {date, startTime, endTime} = req.body
+        const result = await blockHoursRange(date, startTime, endTime)
+        res.status(200).json(result)
+    }
+
+    public getReservationsForNextDays = async (req: Request, res: Response) => {
+        const { days } = req.query;
+        const daysCount = days ? parseInt(days as string) : 7;  // Por defecto, 7 días si no se especifica
+        const result = await getReservationsForNextDays(daysCount);
+        res.status(200).json(result);
+    };
+    
 
 }

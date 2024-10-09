@@ -14,8 +14,13 @@ export class BotRoutes {
         router.post('/newday', botController.getDataSheets)
         router.post('/welcome', botController.handleWriteToSheet)
         router.post('/rows', botController.addClientAndService)
+        router.put('/blockDay', botController.blockDay)
+        router.put('/blockRange', botController.blockRange)
         router.get('/nextReservations', botController.getAllReservations)
         router.get('/freeDay', botController.getFreeHoursInDay)
+        router.get('/today', botController.allReservationsToday)
+        router.get('/resevationsDays', botController.getReservationsForNextDays)
+        router.delete('/reservation', botController.deleteReservation)
 
 
 
