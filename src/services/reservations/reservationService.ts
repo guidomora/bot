@@ -139,6 +139,7 @@ export async function getReservationsRows() {
 
 // TODO: Fix
 export async function getReservationsForNextDays(daysCount: number) {
+
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId;
   const reservationRanges: string[] = [];
@@ -151,51 +152,9 @@ export async function getReservationsForNextDays(daysCount: number) {
     });
 
     const rows = response.data.values || [];
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalizar la fecha actual, quitando la hora
-
-    const endDate = new Date(today);
-    endDate.setDate(today.getDate() + daysCount); // Sumar los días al rango
-
-    for (let i = 1; i < rows.length; i++) {
-      const [dateInSheet] = rows[i]; // Tomamos la fecha de la columna A
-      const reservationDate = new Date(dateInSheet); // TODO: ERROR ------------------------------
-      console.log(dateInSheet);
-      
-
-      // Verificar que la fecha esté entre hoy y la fecha límite (inclusivo)
-      if (reservationDate >= today && reservationDate <= endDate) {
-        const rowNumber = i + 1;
-        reservationRanges.push(`Sheet1!A${rowNumber}:D${rowNumber}`);
-
-        
-      }
-    }
-
-    // Si no se encontraron reservas, devolver un array vacío
-    if (reservationRanges.length === 0) {
-      return [];
-    }
-
-    // Usar batchGet para obtener todas las filas de reservas a la vez
-    const batchResponse = await sheets.spreadsheets.values.batchGet({
-      spreadsheetId,
-      ranges: reservationRanges,
-      majorDimension: 'ROWS',
-    });
-
-    // Extraer los datos de las reservas
-    const rowContent: string[][] = [];
-    const batchRows = batchResponse.data.valueRanges || [];
-    for (const range of batchRows) {
-      const row = range.values || [];
-      if (row.length > 0) {
-        rowContent.push(row[0]);
-      }
-    }
-
-    return rowContent;
+    const today = createOneDay(daysCount)
+    return today
+    
   } catch (error) {
     console.error('Error al obtener reservas para los próximos días:', error);
     throw error;

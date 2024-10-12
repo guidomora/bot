@@ -1,9 +1,11 @@
-export const createOneDay = () => {
+// TODO: agregue el fromThisDay para ver si puedo usar esta misma funcion en vez de crear una nueva
+export const createOneDay = (fromThisDay: number = 0) => {
   const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const daysOfWeek = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
   const today = new Date()
   const dayName = daysOfWeek[today.getDay()]
-  const dayNumber = today.getDate()
+  
+  const dayNumber = today.getDate() + fromThisDay
   const monthName = months[today.getMonth()]
   
 
