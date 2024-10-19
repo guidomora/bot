@@ -1,7 +1,7 @@
 import { envs } from "../../config/envs";
 import { google } from 'googleapis';
 import auth from '../../data/sheetsConnection';
-import { createOneDay } from "../../helpers/helpers";
+import { createOneDay, generateFutureDays } from "../../helpers/helpers";
 
 
 const sheetId = envs.SPREADSHEET_ID
@@ -137,30 +137,61 @@ export async function getReservationsRows() {
 }
 
 
-// TODO: Fix
 export async function getReservationsForNextDays(daysCount: number) {
-
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId;
   const reservationRanges: string[] = [];
-  
+
   try {
+    // Obtener todas las filas con las reservas de la hoja de cálculo
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Sheet1!A:D', // Incluye la columna A (fecha)
+      range: 'Sheet1!A:D', // Incluye la columna A (fecha) y las demás columnas
       majorDimension: 'ROWS',
     });
 
     const rows = response.data.values || [];
-    const today = createOneDay(daysCount)
-    return today
+    const futureDays = generateFutureDays(daysCount);
     
+    const reservations = [];
+
+
+    for (let i = 1; i < rows.length; i++) {
+      const [dateInSheet] = rows[i]; 
+
+      if (futureDays.includes(dateInSheet)) {
+        const rowNumber = i + 1; // Número de fila (1-indexed)
+        reservationRanges.push(`Sheet1!A${rowNumber}:D${rowNumber}`);
+      }
+    }
+
+    if (reservationRanges.length === 0) {
+      console.log('No se encontraron reservas en el rango de fechas especificado.');
+      return [];
+    }
+
+    const batchResponse = await sheets.spreadsheets.values.batchGet({
+      spreadsheetId,
+      ranges: reservationRanges,
+      majorDimension: 'ROWS',
+    });
+
+    // Extraer las reservas de las filas
+    const batchRows = batchResponse.data.valueRanges || [];
+    for (const range of batchRows) {
+      const row = range.values || [];
+      if (row.length > 0 && row[0][2] != undefined) {
+        reservations.push(row[0]);
+      }
+    }
+
+    return reservations;
+
   } catch (error) {
     console.error('Error al obtener reservas para los próximos días:', error);
     throw error;
   }
 }
-
 
 
 

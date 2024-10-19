@@ -1,20 +1,31 @@
-// TODO: agregue el fromThisDay para ver si puedo usar esta misma funcion en vez de crear una nueva
+
 export const createOneDay = (fromThisDay: number = 0) => {
   const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const daysOfWeek = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
   const today = new Date()
+  today.setDate(today.getDate() + fromThisDay);
   const dayName = daysOfWeek[today.getDay()]
-  
-  const dayNumber = today.getDate() + fromThisDay
+  const dayNumber = today.getDate()
   const monthName = months[today.getMonth()]
   
 
   const day = `${dayName} ${dayNumber} ${monthName}`
-  console.log(day);
+  console.log(dayName);
   return day
 }
 
+// Función para generar fechas futuras en formato "viernes 18 de octubre"
+export function generateFutureDays(daysCount: number): string[] {
+  const futureDays = [];
+  
+  // Generar las fechas desde el día actual hasta daysCount días en el futuro
+  for (let i = 0; i <= daysCount; i++) {
+    const futureDay = createOneDay(i); // Usamos la función createOneDay() para generar la fecha
+    futureDays.push(futureDay); // Añadir la fecha al array
+  }
 
+  return futureDays; // Retornar todas las fechas generadas
+}
 
 
 // ------------------------- 14 days-------------------------------
