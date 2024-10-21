@@ -1,10 +1,13 @@
 import { Router } from "express";
 import { BotController } from "../controllers/botController";
+import { TwilioControllers } from "../controllers/twilioControllers/twilioControllers";
+
 
 export class BotRoutes {
     static get routes(): Router {
         const router = Router()
         const botController = new BotController()
+        const twilioController = new TwilioControllers()
 
 
 
@@ -21,6 +24,9 @@ export class BotRoutes {
         router.get('/today', botController.allReservationsToday)
         router.get('/resevationsDays', botController.getReservationsForNextDays)
         router.delete('/reservation', botController.deleteReservation)
+        // -------------------------------
+        router.get('/message', twilioController.testMsg)
+        router.post('/message', twilioController.getMsgs)
 
 
 

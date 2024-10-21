@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { repeatDay } from "../helpers/helpers";
 import { blockDayReservation, blockHoursRange, getLastRowValue, writeToSheet } from "../services/days/daysService";
 import { addReservation, deleteReservation, getDayReservationsRows, getFreeHoursDay, getReservationsForNextDays, getReservationsRows } from "../services/reservations/reservationService";
+import { createMessage } from "../services/twilioServices/twilioServices";
+import MessagingResponse from "twilio/lib/twiml/MessagingResponse";
 
 
 
@@ -64,6 +66,5 @@ export class BotController {
         const result = await getReservationsForNextDays(daysCount);
         res.status(200).json(result);
     };
-    
 
 }
