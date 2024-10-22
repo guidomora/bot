@@ -6,7 +6,6 @@ import { createOneDay, generateFutureDays } from "../../helpers/helpers";
 
 const sheetId = envs.SPREADSHEET_ID
 
-// POST
 
 // Adds a reservation or update reservation
 // TODO: ver tema de la hora, si habria que hacer algo para que solo se ponga el numero (14) en vez de ej 14:00
@@ -71,7 +70,7 @@ export async function addReservation(date: string, time: string, customer: strin
     }
 
     console.log('No se encontró una fila que coincida con la fecha y hora.');
-    return null;
+    return 'La fecha o el horario solicitado para esa reserva, no se encuentra disponible.';
   } catch (error) {
     console.error('Error al añadir la reserva:', error);
     throw error;
