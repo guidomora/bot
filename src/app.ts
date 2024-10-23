@@ -1,3 +1,4 @@
+import { processReservationQuery } from "./ai/assistantBot";
 import { envs } from "./config/envs";
 import { createOneDay } from "./helpers/helpers";
 import { AppRoutes } from "./routes/app-routes";
@@ -15,7 +16,7 @@ async function main() {
         routes: AppRoutes.routes
     })
 
-    
+    processReservationQuery('hola, como estas? quisiera hacer una reserva para el viernes 24 de octubre a las 21hs')
     server.start()
 }
 
