@@ -13,4 +13,6 @@ export const envs = {
     SPREADSHEET_ID:env.get("SPREADSHEET_ID").required().asString(),
     TWILIO_ID:env.get("TWILIO_ID").required().asString(),
     TWILIO_TKN:env.get("TWILIO_TKN").required().asString(),
+    OPEN_AI:env.get("OPEN_AI").required().asString(),
+    PROJECT_ID:env.get("PROJECT_ID").required().asString(),
 }
