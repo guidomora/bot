@@ -321,6 +321,8 @@ export async function getFreeHoursDay(date: string) {
       console.log('No se encontraron horarios libres para esa fecha.');
     }
 
+    console.log(freeHours);
+    
     return freeHours;
   } catch (error) {
     console.error('Error al obtener horarios libres:', error);

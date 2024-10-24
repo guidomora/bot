@@ -16,7 +16,7 @@ async function main() {
         routes: AppRoutes.routes
     })
 
-    processReservationQuery('hola, como estas? quisiera hacer una reserva para el viernes 24 de octubre a las 21hs')
+    processReservationQuery('hola, como estas? quisiera hacer una reserva para el viernes 25 de octubre a las 22hs')
     server.start()
 }
 
