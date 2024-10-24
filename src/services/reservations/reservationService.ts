@@ -330,6 +330,71 @@ export async function getFreeHoursDay(date: string) {
   }
 }
 
+// TODO: chequear si el horario en esa fecha esta disponible
+export async function checkHourDay(date: string, time: string) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const spreadsheetId = sheetId;
+  const range = 'Sheet1!A:B'; // Column A has dates, B has times
+  let freeHours: string[][] = [];
+
+  try {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+      majorDimension: 'ROWS',
+    });
+
+    const rows = response.data.values || [];
+    const reservationRows: string[] = [];
+
+    // Recorrer las filas y obtener los números de las filas que coinciden con la fecha
+    for (let i = 0; i < rows.length; i++) {
+      const [dateInSheet, timeInSheet] = rows[i];
+
+      // Verificar si la fecha coincide
+      if (dateInSheet === date && timeInSheet === time) {
+        const dataNumber = i + 1; // Guardar el número de la fila (1-indexed)
+        reservationRows.push(`Sheet1!A${dataNumber}:D${dataNumber}`); // Agregar rango para batchGet
+      }
+    }
+
+    // Si no hay filas que coincidan con la fecha, devolver un array vacío
+    if (reservationRows.length === 0) {
+      console.log('No se encontraron horarios libres para esa fecha.');
+      return [];
+    }
+
+    // Usar batchGet para obtener todas las filas que coinciden con la fecha
+    const batchResponse = await sheets.spreadsheets.values.batchGet({
+      spreadsheetId,
+      ranges: reservationRows,
+      majorDimension: 'ROWS',
+    });
+
+    // Filtrar las filas para obtener las horas libres
+    const batchRows = batchResponse.data.valueRanges || [];
+    for (const range of batchRows) {
+      const row = range.values || [];
+      // Comprobar si la tercera columna está vacía (no hay cliente asignado)
+      if (row.length > 0 && row[0][2] === undefined) {
+        freeHours.push(row[0]); // Añadir la fila al array de horas libres
+      }
+    }
+
+    
+    if (freeHours.length === 0) {
+      console.log('No se encontraron horarios libres para esa fecha.');
+    }
+
+    console.log(freeHours);
+    
+    return freeHours;
+  } catch (error) {
+    console.error('Error al obtener horarios libres:', error);
+    throw error;
+  }
+}
+
 // DELETE
 
 export async function deleteReservation(date: string, time: string) {
