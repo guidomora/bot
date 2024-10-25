@@ -65,7 +65,7 @@ export async function addReservation(date: string, time: string, customer: strin
         });
 
         console.log(`Reserva añadida para ${date} a las ${time}: Cliente - ${customer}, Servicio - ${service}`);
-        return { date, time, customer, service };
+        return `Reserva añadida para ${date} a las ${time}: Cliente - ${customer}, Servicio - ${service}`;
       }
     }
 
@@ -361,7 +361,7 @@ export async function checkHourDay(date: string, time: string) {
     // Si no hay filas que coincidan con la fecha, devolver un array vacío
     if (reservationRows.length === 0) {
       console.log('El horario o fecha solicitado no existe.');
-      return "El horario o fecha solicitado no existe";
+      return false;
     }
 
     const batchResponse = await sheets.spreadsheets.values.batchGet({
