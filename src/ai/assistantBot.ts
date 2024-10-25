@@ -1,4 +1,4 @@
-import { getFreeHoursDay } from "../services/reservations/reservationService";
+import { checkHourDay, getFreeHoursDay } from "../services/reservations/reservationService";
 import { openai } from "./openaiClient";
 
 
@@ -55,7 +55,7 @@ export async function processReservationQuery(userMessage: string) {
       time
     });
 
-    getFreeHoursDay(date!)
+    checkHourDay(date!, time!)
 
     return {
       userMessage: userMessagePart,  // Mensaje visible para el usuario

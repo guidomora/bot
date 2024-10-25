@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
 import { repeatDay } from "../../helpers/helpers"
 import { getLastRowValue, writeToSheet, blockDayReservation, blockHoursRange } from "../../services/days/daysService"
-import { getReservationsRows, getFreeHoursDay, getDayReservationsRows, addReservation, deleteReservation, getReservationsForNextDays } from "../../services/reservations/reservationService"
+import { getReservationsRows, getFreeHoursDay, getDayReservationsRows, addReservation, deleteReservation, getReservationsForNextDays, checkHourDay } from "../../services/reservations/reservationService"
 
 export class ServerControllers {
     public getDataSheets = async(req: Request, res: Response) => {
@@ -61,4 +61,10 @@ export class ServerControllers {
         const result = await getReservationsForNextDays(daysCount);
         res.status(200).json(result);
     };
+
+    public checkHourAvailability = async (req:Request, res:Response) => {
+        const {date, time} = req.body
+        const result = await checkHourDay(date, time)
+        res.status(200).json(result)
+    }
 }

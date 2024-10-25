@@ -24,6 +24,7 @@ export class BotRoutes {
         router.get('/freeDay', serverController.getFreeHoursInDay)
         router.get('/today', serverController.allReservationsToday)
         router.get('/resevationsDays', serverController.getReservationsForNextDays)
+        router.get('/available', serverController.checkHourAvailability)
         router.delete('/reservation', serverController.deleteReservation)
         // -------------------------------
         router.get('/message', twilioController.testMsg)

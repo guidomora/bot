@@ -360,11 +360,10 @@ export async function checkHourDay(date: string, time: string) {
 
     // Si no hay filas que coincidan con la fecha, devolver un array vacío
     if (reservationRows.length === 0) {
-      console.log('No se encontraron horarios libres para esa fecha.');
-      return [];
+      console.log('El horario o fecha solicitado no existe.');
+      return "El horario o fecha solicitado no existe";
     }
 
-    // Usar batchGet para obtener todas las filas que coinciden con la fecha
     const batchResponse = await sheets.spreadsheets.values.batchGet({
       spreadsheetId,
       ranges: reservationRows,
@@ -376,7 +375,7 @@ export async function checkHourDay(date: string, time: string) {
     for (const range of batchRows) {
       const row = range.values || [];
       // Comprobar si la tercera columna está vacía (no hay cliente asignado)
-      if (row.length > 0 && row[0][2] === undefined) {
+      if (row.length > 0 && row[0][2] === undefined && row[0][3] === undefined) {
         freeHours.push(row[0]); // Añadir la fila al array de horas libres
       }
     }
@@ -384,11 +383,13 @@ export async function checkHourDay(date: string, time: string) {
     
     if (freeHours.length === 0) {
       console.log('No se encontraron horarios libres para esa fecha.');
+      return false
     }
 
-    console.log(freeHours);
     
-    return freeHours;
+    console.log("true:",freeHours);
+    
+    return true;
   } catch (error) {
     console.error('Error al obtener horarios libres:', error);
     throw error;
