@@ -81,3 +81,51 @@ export async function extractDetails(message: string) {
   }
 
 
+
+  // Objeto para almacenar el historial de conversación en memoria
+const conversationHistory: Record<string, any> = {};
+
+// Función para procesar mensajes
+export async function processReservationQuery(userMessage: string, userId: string) {
+    // Inicia historial de conversación si no existe para este usuario
+    if (!conversationHistory[userId]) {
+        conversationHistory[userId] = {
+            messages: [],
+            lastIntent: null,
+            reservationDetails: { date: null, time: null }
+        };
+    }
+
+    const history = conversationHistory[userId];
+    
+    // Almacena el mensaje en el historial
+    history.messages.push({ user: userMessage });
+
+    // Consulta a GPT con el mensaje y el historial de contexto
+    const responseMessage = await validateData(userMessage);
+    const { action, date, time } = await extractDetails(responseMessage!);
+
+    // Si se identifican fecha y hora, guarda en el historial
+    if (date && time) {
+        history.reservationDetails.date = date;
+        history.reservationDetails.time = time;
+    }
+
+    // Almacena la intención detectada para el siguiente mensaje
+    history.lastIntent = action;
+
+    // Ejemplo de respuesta usando historial (para mensajes de confirmación)
+    if (action === "crear_reserva" && history.lastIntent === "consultar_disponibilidad" &&
+        history.reservationDetails.date && history.reservationDetails.time) {
+        const response = `Perfecto, se ha creado la reserva para el ${history.reservationDetails.date} a las ${history.reservationDetails.time}.`;
+        history.messages.push({ gpt: response });
+        return response;
+    }
+
+    // Guarda la respuesta de GPT en el historial
+    history.messages.push({ gpt: responseMessage });
+    return responseMessage;
+}
+
+
+

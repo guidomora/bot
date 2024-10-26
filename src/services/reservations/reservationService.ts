@@ -330,7 +330,7 @@ export async function getFreeHoursDay(date: string) {
   }
 }
 
-// TODO: chequear si el horario en esa fecha esta disponible
+
 export async function checkHourDay(date: string, time: string) {
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId;

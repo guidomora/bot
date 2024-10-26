@@ -1,6 +1,7 @@
+import { checkHourDay, deleteReservation } from "../services/reservations/reservationService";
 import { extractDetails, handleCreateReservation } from "./actions/actions";
 import { openai } from "./openaiClient";
-
+import readline from "readline"
 
 // TODO: crear funciones para que sepa que si le dicen hoy sepa el dia de hoy numbreDia, numero, mesNombre.
 // TODO: crear funciones para que sepa que si le dicen mañana sepa el dia de mañana numbreDia, numero, mesNombre.
@@ -10,9 +11,6 @@ import { openai } from "./openaiClient";
 // const tomorrowFormatted = tomorrow.toLocaleDateString("es-ES", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
 
-
-
-// agrgar cantidad de max tokens
 export async function processReservationQuery(userMessage: string) {
   try {
     // Realiza la llamada a la API de OpenAI sin streaming
@@ -22,7 +20,7 @@ export async function processReservationQuery(userMessage: string) {
         { role: "system", 
             content: `Tu nombre es "GuidoBot" y eres un asistente encargado exclusivamente de gestionar reservas del restaurante "BotRestaurant".
                     Tu tarea principal es identificar la acción correcta que el usuario quiere realizar en formato 'action: <nombre de la acción>' al final de cada respuesta.
-                    Las acciones posibles son: 'crear_reserva', 'consultar_disponibilidad', 'modificar_reserva', 'cancelar_reserva'.
+                    Las acciones posibles son: 'crear_reserva', 'buscar_disponibilidad', 'modificar_reserva', 'cancelar_reserva'.
                     Siempre vas a tener que identificar la fecha (formato 'nombreDia numero mesNombre') y el horario (formato hh:mm) que ingresó el usuario y devolverlos en formato 'fecha: nombreDia numero mesNombre' y 'horario: hh:mm'.
                     No puedes asumir la disponibilidad de fechas u horarios, solo identifica la intención del usuario. 
                     La disponibilidad actual es de 10:00 a 22:00 de lunes a viernes y de 12:00 a 23:00 los fines de semana.`
@@ -50,6 +48,12 @@ export async function processReservationQuery(userMessage: string) {
       case 'crear_reserva':{
         return await handleCreateReservation(date!, time!)
       }
+      case 'buscar_disponibilidad':{
+        return await checkHourDay(date!, time!)
+      }
+      case 'cancelar_reserva':{
+        return await deleteReservation(date!, time!)
+      }
       default:{
         return "reserva creada "
       }
@@ -59,6 +63,7 @@ export async function processReservationQuery(userMessage: string) {
     throw error; 
   }
 }
+
 
 
 

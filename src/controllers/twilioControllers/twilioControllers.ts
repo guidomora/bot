@@ -2,6 +2,7 @@
 import MessagingResponse from "twilio/lib/twiml/MessagingResponse"
 import { createMessage } from "../../services/twilioServices/twilioServices"
 import { Request, Response } from "express"
+import { processReservationQuery } from "../../ai/assistantBot"
 
 export class TwilioControllers {
     
@@ -22,5 +23,11 @@ export class TwilioControllers {
       
         res.writeHead(200, { "Content-Type": "text/xml" });
         res.end(twiml.toString());
+    }
+
+    public interactWithBot = async (req: Request, res: Response) => {
+        const {body} = req
+        const response = await processReservationQuery(body.message)
+        res.status(200).json(response)
     }
 }

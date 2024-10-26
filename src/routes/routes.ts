@@ -30,6 +30,9 @@ export class BotRoutes {
         router.get('/message', twilioController.testMsg)
         router.post('/message', twilioController.getMsgs)
 
+        // ---------------------------------------
+        router.post('/interactions', twilioController.interactWithBot)
+
 
 
         return router
