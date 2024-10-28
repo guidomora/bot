@@ -1,4 +1,5 @@
-import { addReservation, checkHourDay } from "../../services/reservations/reservationService";
+import { addReservation, checkHourDay, deleteReservation } from "../../services/reservations/reservationService";
+import { processReservationQuery } from "../assistantBot";
 import { openai } from "../openaiClient";
 
 export async function handleCreateReservation(date: string, time: string) {
@@ -23,9 +24,11 @@ async function validateData(message: string) {
                 {
                     role: "system",
                     content: `Tu tarea principal es identificar la acción correcta que el usuario quiere realizar en formato 'action: <nombre de la acción>' al final de cada respuesta.
-                          Las acciones posibles son: 'crear_reserva', 'consultar_disponibilidad', 'modificar_reserva', 'cancelar_reserva'.
-                          Siempre vas a tener que identificar la fecha (formato 'nombreDia numero mesNombre') y el horario (formato hh:mm) que ingresó el usuario y devolverlos en formato 'fecha: nombreDia numero mesNombre' y 'horario: hh:mm'.
-                          No puedes asumir la disponibilidad de fechas u horarios, solo identifica la intención del usuario.`
+                        Las acciones posibles son: 'crear_reserva', 'consultar_disponibilidad', 'modificar_reserva', 'cancelar_reserva'.
+                        Siempre vas a tener que identificar la fecha (formato 'nombreDia numero mesNombre') y el horario (formato hh:mm) que ingresó el usuario y devolverlos en formato 'fecha: nombreDia numero mesNombre' y 'horario: hh:mm'.
+                        No puedes asumir la disponibilidad de fechas u horarios, solo identifica la intención del usuario.
+                        Si la accion es modificar_reserva, ademas de captar la fecha (formato 'nombreDia numero mesNombre') y horario (formato hh:mm),
+                        vas a tener que captar la fecha nueva 'nueva_fecha: formato <nombreDia numero mesNombre>' y horario nuevo 'nuevo_horario: formato <hh:mm>'`
 
                 },
                 { role: "user", content: message }
@@ -40,91 +43,171 @@ async function validateData(message: string) {
     }
 }
 
+// TODO: 3)original
 //   RegEx para extraer los parametros y validarlos
+// export async function extractDetails(message: string) {
+//     let action: string | null = null;
+//     let date: string | null = null;
+//     let time: string | null = null;
+//     let newDay: string | null = null;
+//     let newTime: string | null = null
+//     const maxAttempts = 3;
+//     let attempts = 0;
+
+//     // Primer análisis de la respuesta original para obtener acción, fecha y horario
+//     const initialMatch = message.match(/action: (\w+)/);
+//     const initialDateMatch = message.match(/fecha: (\w+\s\d{1,2}\s\w+)/);
+//     const initialTimeMatch = message.match(/horario: ([\d]{2}:[\d]{2})/);
+//     const initialNewDayMatch = message.match(/newFecha: (\w+\s\d{1,2}\s\w+)/);
+//     const initialNewTimeMatch = message.match(/newHora: ([\d]{2}:[\d]{2})/);
+
+//     action = initialMatch ? initialMatch[1] : null;
+//     date = initialDateMatch ? initialDateMatch[1].trim() : null;
+//     time = initialTimeMatch ? initialTimeMatch[1].trim() : null;
+
+//     // segundo analisis ya que puede ser que sean null
+//     while ((action === null || date === null || time === null) && attempts < maxAttempts) {
+//         const responseMessage = await validateData(message);
+
+//         const actionMatch = responseMessage!.match(/action: (\w+)/);
+//         const dateMatch = responseMessage!.match(/fecha: (\w+\s\d{1,2}\s\w+)/);
+//         const timeMatch = responseMessage!.match(/horario: ([\d]{2}:[\d]{2})/);
+
+//         action = actionMatch ? actionMatch[1] : action;
+//         date = dateMatch ? dateMatch[1].trim() : date;
+//         time = timeMatch ? timeMatch[1].trim() : time;
+
+//         console.log("Revalidando..........");
+//         attempts++;
+//     }
+
+//     return {
+//         action,
+//         date,
+//         time,
+//     };
+// }
+
 export async function extractDetails(message: string) {
     let action: string | null = null;
     let date: string | null = null;
     let time: string | null = null;
+    let newDate: string | null = null;
+    let newTime: string | null = null;
     const maxAttempts = 3;
     let attempts = 0;
-  
-    // Primer análisis de la respuesta original para obtener acción, fecha y horario
-    const initialMatch = message.match(/action: (\w+)/);
-    const initialDateMatch = message.match(/fecha: (\w+\s\d{1,2}\s\w+)/);
-    const initialTimeMatch = message.match(/horario: ([\d]{2}:[\d]{2})/);
-  
-    action = initialMatch ? initialMatch[1] : null;
-    date = initialDateMatch ? initialDateMatch[1].trim() : null;
-    time = initialTimeMatch ? initialTimeMatch[1].trim() : null;
-  
-    // segundo analisis ya que puede ser que sean null
-    while ((action === null || date === null || time === null) && attempts < maxAttempts) {
-      const responseMessage = await validateData(message);
-  
-      const actionMatch = responseMessage!.match(/action: (\w+)/);
-      const dateMatch = responseMessage!.match(/fecha: (\w+\s\d{1,2}\s\w+)/);
-      const timeMatch = responseMessage!.match(/horario: ([\d]{2}:[\d]{2})/);
-  
-      action = actionMatch ? actionMatch[1] : action;
-      date = dateMatch ? dateMatch[1].trim() : date;
-      time = timeMatch ? timeMatch[1].trim() : time;
-  
-      console.log("Revalidando..........");
-      attempts++;
+
+    const singleLineMessage = message.replace(/\n/g, " ");
+
+    // Primer análisis para extraer acción, fecha y hora originales
+    const actionMatch = singleLineMessage.match(/action:\s*(\w+)/);
+    const dateMatch = singleLineMessage.match(/fecha:\s*(\w+\s\d{1,2}\s\w+)/);
+    const timeMatch = singleLineMessage.match(/horario:\s*([\d]{2}:[\d]{2})/);
+
+    // Solo intenta extraer `newDate` y `newTime` si es una modificación de reserva
+    if (singleLineMessage.includes('modificar_reserva')) {
+        const newDateMatch = singleLineMessage.match(/nueva_fecha:\s*(\w+\s\d{1,2}\s\w+)/);
+        const newTimeMatch = singleLineMessage.match(/nuevo_horario:\s*([\d]{2}:[\d]{2})/);
+
+        newDate = newDateMatch ? newDateMatch[1].trim() : null;
+        newTime = newTimeMatch ? newTimeMatch[1].trim() : null;
     }
-  
+
+    action = actionMatch ? actionMatch[1] : null;
+    date = dateMatch ? dateMatch[1].trim() : null;
+    time = timeMatch ? timeMatch[1].trim() : null;
+
+    if (!singleLineMessage.includes('no_action')) {
+
+        // Segundo análisis para intentar obtener datos faltantes
+        while ((action === null || date === null || time === null || (singleLineMessage.includes('modificar_reserva') && (newDate === null || newTime === null))) && attempts < maxAttempts) {
+            const responseMessage = await validateData(singleLineMessage);
+
+            const actionMatch = responseMessage!.match(/action:\s*(\w+)/);
+            const dateMatch = responseMessage!.match(/fecha:\s*(\w+\s\d{1,2}\s\w+)/);
+            const timeMatch = responseMessage!.match(/horario:\s*([\d]{2}:[\d]{2})/);
+
+            action = actionMatch ? actionMatch[1] : action;
+            date = dateMatch ? dateMatch[1].trim() : date;
+            time = timeMatch ? timeMatch[1].trim() : time;
+
+            // Reintentar capturar `newDate` y `newTime` si es una modificación de reserva
+            if (message.includes('modificar_reserva')) {
+                const newDateMatch = responseMessage!.match(/nueva_fecha:\s*(\w+\s\d{1,2}\s\w+)/);
+                const newTimeMatch = responseMessage!.match(/nuevo_horario:\s*([\d]{2}:[\d]{2})/);
+
+                newDate = newDateMatch ? newDateMatch[1].trim() : newDate;
+                newTime = newTimeMatch ? newTimeMatch[1].trim() : newTime;
+            }
+
+            console.log("Revalidando..........");
+            attempts++;
+        }
+    }
+
+
     return {
-      action,
-      date,
-      time,
+        singleLineMessage,
+        action,
+        date,
+        time,
+        newDate,
+        newTime,
     };
-  }
+}
 
 
 
-  // Objeto para almacenar el historial de conversación en memoria
+
+
+// Objeto para almacenar el historial de conversación en memoria
 const conversationHistory: Record<string, any> = {};
 
 // Función para procesar mensajes
-export async function processReservationQuery(userMessage: string, userId: string) {
-    // Inicia historial de conversación si no existe para este usuario
-    if (!conversationHistory[userId]) {
-        conversationHistory[userId] = {
-            messages: [],
-            lastIntent: null,
-            reservationDetails: { date: null, time: null }
-        };
-    }
+// export async function processReservationQuery(userMessage: string, userId: string) {
+//     // Inicia historial de conversación si no existe para este usuario
+//     if (!conversationHistory[userId]) {
+//         conversationHistory[userId] = {
+//             messages: [],
+//             lastIntent: null,
+//             reservationDetails: { date: null, time: null }
+//         };
+//     }
 
-    const history = conversationHistory[userId];
-    
-    // Almacena el mensaje en el historial
-    history.messages.push({ user: userMessage });
+//     const history = conversationHistory[userId];
 
-    // Consulta a GPT con el mensaje y el historial de contexto
-    const responseMessage = await validateData(userMessage);
-    const { action, date, time } = await extractDetails(responseMessage!);
+//     // Almacena el mensaje en el historial
+//     history.messages.push({ user: userMessage });
 
-    // Si se identifican fecha y hora, guarda en el historial
-    if (date && time) {
-        history.reservationDetails.date = date;
-        history.reservationDetails.time = time;
-    }
+//     // Consulta a GPT con el mensaje y el historial de contexto
+//     const responseMessage = await validateData(userMessage);
+//     const { action, date, time } = await extractDetails(responseMessage!);
 
-    // Almacena la intención detectada para el siguiente mensaje
-    history.lastIntent = action;
+//     // Si se identifican fecha y hora, guarda en el historial
+//     if (date && time) {
+//         history.reservationDetails.date = date;
+//         history.reservationDetails.time = time;
+//     }
 
-    // Ejemplo de respuesta usando historial (para mensajes de confirmación)
-    if (action === "crear_reserva" && history.lastIntent === "consultar_disponibilidad" &&
-        history.reservationDetails.date && history.reservationDetails.time) {
-        const response = `Perfecto, se ha creado la reserva para el ${history.reservationDetails.date} a las ${history.reservationDetails.time}.`;
-        history.messages.push({ gpt: response });
-        return response;
-    }
+//     // Almacena la intención detectada para el siguiente mensaje
+//     history.lastIntent = action;
 
-    // Guarda la respuesta de GPT en el historial
-    history.messages.push({ gpt: responseMessage });
-    return responseMessage;
+//     // Ejemplo de respuesta usando historial (para mensajes de confirmación)
+//     if (action === "crear_reserva" && history.lastIntent === "consultar_disponibilidad" &&
+//         history.reservationDetails.date && history.reservationDetails.time) {
+//         const response = `Perfecto, se ha creado la reserva para el ${history.reservationDetails.date} a las ${history.reservationDetails.time}.`;
+//         history.messages.push({ gpt: response });
+//         return response;
+//     }
+
+//     // Guarda la respuesta de GPT en el historial
+//     history.messages.push({ gpt: responseMessage });
+//     return responseMessage;
+// }
+
+export async function moveReservation(date: string, time: string, newDate: string, newTime: string) {
+    await deleteReservation(date, time)
+    await addReservation(newDate, newTime, "Guido cambio", "cena cambio")
 }
 
 
