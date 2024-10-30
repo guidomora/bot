@@ -1,11 +1,12 @@
-import { checkHourDay, deleteReservation } from "../services/reservations/reservationService";
+import { checkHourDay, deleteReservation, getFreeHoursDay } from "../services/reservations/reservationService";
 import { extractDetails, handleCreateReservation, moveReservation } from "./actions/actions";
 import { mainPrompt } from "./helpersChat/prompts";
 import { openai } from "./openaiClient";
 
 
 
-// FIXME: 3)Creo que es mejor volver a procesar de nuevo los datos para la funcion de modificar_reserva
+// FIXME: 1)Creo que es mejor volver a procesar de nuevo los datos para la funcion de modificar_reserva
+// FIXME: 3) hacer algo para que el servicio en caso de un restaurante no lo tenga que procesar, seria util en otro rubro
 
 export async function processReservationQuery(userMessage: string) {
   try {
@@ -24,7 +25,7 @@ export async function processReservationQuery(userMessage: string) {
     // Devuelve la respuesta completa
     const gptResponse = response.choices[0].message.content;
 
-    const {action, date, time, newDate, newTime, singleLineMessage} = await extractDetails(gptResponse!)
+    const {action, date, time, user, service, newDate, newTime, singleLineMessage} = await extractDetails(gptResponse!)
     
 
     console.log({
@@ -33,28 +34,32 @@ export async function processReservationQuery(userMessage: string) {
       action,
       date,
       time,
+      user,
+      service,
       newDate,
       newTime
     });
 
     switch(action){
       case 'crear_reserva':{
-        // TODO:: 4) agregar user y service
-        return await handleCreateReservation(date!, time!)
+        
+        return await handleCreateReservation(date!, time!, user!, service!)
       }
       case 'buscar_disponibilidad':{
         return await checkHourDay(date!, time!)
       }
       case 'cancelar_reserva':{
-        // TODO:: 4) agregar user y service
+        // TODO:: 2) agregar user y service
         return await deleteReservation(date!, time!)
       }
-      // TODO: 3)ajusstes aca
+      // TODO: 1)ajusstes aca
       case 'modificar_reserva': {
-        // TODO:: 4) agregar user y service
+        // TODO:: 2) agregar user y service
         return await moveReservation(date!, time!, newDate!, newTime!)
       }
-      // TODO: 5) horarios libres de un dia
+      case 'horas_libres_en_dia':{
+        return await getFreeHoursDay(date!)
+      }
       default:{
         return gptResponse
       }
