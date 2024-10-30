@@ -11,7 +11,7 @@ export const getExpressionToday = () => {
     
   
     const day = `${dayName} ${dayNumber} ${monthName}`
-    console.log(dayName);
+    console.log(day);
     return day
 }
 
@@ -42,6 +42,7 @@ export const getExpressionTomorrow = async (date: string) => {
     const newDayNumber = currentDate.getDate(); // Nuevo número de día
     const newMonthName = months[currentDate.getMonth()]; // Nuevo mes
   
-  
+    console.log(`${newDay} ${newDayNumber} ${newMonthName}`);
+    
     return `${newDay} ${newDayNumber} ${newMonthName}`; // Devolver la fecha en el formato deseado
   };

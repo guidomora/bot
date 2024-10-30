@@ -1,5 +1,5 @@
 import { addReservation, checkHourDay, deleteReservation } from "../../services/reservations/reservationService";
-import { processReservationQuery } from "../assistantBot";
+import { mainPrompt } from "../helpersChat/prompts";
 import { openai } from "../openaiClient";
 
 export async function handleCreateReservation(date: string, time: string) {
@@ -17,18 +17,14 @@ export async function handleCreateReservation(date: string, time: string) {
 
 
 async function validateData(message: string) {
+    
     try {
         const response = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o-mini",
             messages: [
                 {
                     role: "system",
-                    content: `Tu tarea principal es identificar la acción correcta que el usuario quiere realizar en formato 'action: <nombre de la acción>' al final de cada respuesta.
-                        Las acciones posibles son: 'crear_reserva', 'consultar_disponibilidad', 'modificar_reserva', 'cancelar_reserva'.
-                        Siempre vas a tener que identificar la fecha (formato 'nombreDia numero mesNombre') y el horario (formato hh:mm) que ingresó el usuario y devolverlos en formato 'fecha: nombreDia numero mesNombre' y 'horario: hh:mm'.
-                        No puedes asumir la disponibilidad de fechas u horarios, solo identifica la intención del usuario.
-                        Si la accion es modificar_reserva, ademas de captar la fecha (formato 'nombreDia numero mesNombre') y horario (formato hh:mm),
-                        vas a tener que captar la fecha nueva 'nueva_fecha: formato <nombreDia numero mesNombre>' y horario nuevo 'nuevo_horario: formato <hh:mm>'`
+                    content: mainPrompt
 
                 },
                 { role: "user", content: message }
@@ -103,19 +99,21 @@ export async function extractDetails(message: string) {
     const actionMatch = singleLineMessage.match(/action:\s*(\w+)/);
     const dateMatch = singleLineMessage.match(/fecha:\s*(\w+\s\d{1,2}\s\w+)/);
     const timeMatch = singleLineMessage.match(/horario:\s*([\d]{2}:[\d]{2})/);
+    
 
     // Solo intenta extraer `newDate` y `newTime` si es una modificación de reserva
     if (singleLineMessage.includes('modificar_reserva')) {
         const newDateMatch = singleLineMessage.match(/nueva_fecha:\s*(\w+\s\d{1,2}\s\w+)/);
         const newTimeMatch = singleLineMessage.match(/nuevo_horario:\s*([\d]{2}:[\d]{2})/);
-
         newDate = newDateMatch ? newDateMatch[1].trim() : null;
         newTime = newTimeMatch ? newTimeMatch[1].trim() : null;
     }
+    
 
     action = actionMatch ? actionMatch[1] : null;
     date = dateMatch ? dateMatch[1].trim() : null;
     time = timeMatch ? timeMatch[1].trim() : null;
+    
 
     if (!singleLineMessage.includes('no_action')) {
 
@@ -157,7 +155,17 @@ export async function extractDetails(message: string) {
 }
 
 
+// const actionMatch = singleLineMessage.match(/action:\s*(\w+)/);
+// const dateMatch = singleLineMessage.match(/fecha:\s*(\w+\s\d{1,2}\s\w+)/);
+// const timeMatch = singleLineMessage.match(/horario:\s*([\d]{2}:[\d]{2})/);
 
+// if (singleLineMessage.includes('modificar_reserva')) {
+//     const newDateMatch = singleLineMessage.match(/nueva_fecha:\s*(\w+\s\d{1,2}\s\w+)/);
+//     const newTimeMatch = singleLineMessage.match(/nuevo_horario:\s*([\d]{2}:[\d]{2})/);
+
+//     newDate = newDateMatch ? newDateMatch[1].trim() : null;
+//     newTime = newTimeMatch ? newTimeMatch[1].trim() : null;
+// }
 
 
 // Objeto para almacenar el historial de conversación en memoria
