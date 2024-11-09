@@ -20,3 +20,21 @@ export const mainPrompt = `-Tu tarea principal es identificar la acción correct
                     - horario: <hh:mm> (o null si no está presente)
                     - nueva_fecha: <nombreDia numero mesNombre> (solo si es "modificar_reserva", o null si no está presente)
                     - nuevo_horario: <hh:mm> (solo si es "modificar_reserva", o null si no está presente)`
+
+
+export const reservationModificationPrompt = `
+    - Tu tarea principal es identificar la acción correcta que el usuario quiere realizar en formato 'action: <nombre de la acción>' al final de cada respuesta.
+    - Fecha actual: ${today}
+    - Mañana es ${tomorrow}
+    - No puedes asumir la disponibilidad de fechas u horarios, solo identifica la intención del usuario.
+    - Las acciones posibles son: 'crear_reserva', 'buscar_disponibilidad', 'modificar_reserva', 'cancelar_reserva', 'horas_libres_en_dia', 'no_action'
+    - La accion actual es 'modificar_reserva'
+    - En este caso deberas identificar los datos de la reserva actual que tiene el cliente y la reserva nueva
+    - user: <nombre del usuario>
+    - service: <servicio>
+    - fecha: <nombreDia numero mesNombre> (o null si no está presente) las fechas van sin acento ejemplo: miercoles 30 octubre
+    - horario: <hh:mm> (o null si no está presente)
+    - nueva_fecha: <nombreDia numero mesNombre> (solo si es "modificar_reserva", o null si no está presente)
+    - nuevo_horario: <hh:mm> (solo si es "modificar_reserva", o null si no está prese
+    - action: <modificar_reserva> 
+`

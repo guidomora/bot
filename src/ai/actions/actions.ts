@@ -91,7 +91,9 @@ export async function extractDetails(message: string) {
     let newDate: string | null = null;
     let newTime: string | null = null;
     let user: string | null = null;
-    let service: string | null = null;
+    // let service: string | null = null;
+    let service: string | null = "cena";
+
     const maxAttempts = 3;
     let attempts = 0;
 
@@ -163,67 +165,11 @@ export async function extractDetails(message: string) {
 
 
 
-// const actionMatch = singleLineMessage.match(/action:\s*(\w+)/);
-// const dateMatch = singleLineMessage.match(/fecha:\s*(\w+\s\d{1,2}\s\w+)/);
-// const timeMatch = singleLineMessage.match(/horario:\s*([\d]{2}:[\d]{2})/);
-
-// if (singleLineMessage.includes('modificar_reserva')) {
-//     const newDateMatch = singleLineMessage.match(/nueva_fecha:\s*(\w+\s\d{1,2}\s\w+)/);
-//     const newTimeMatch = singleLineMessage.match(/nuevo_horario:\s*([\d]{2}:[\d]{2})/);
-
-//     newDate = newDateMatch ? newDateMatch[1].trim() : null;
-//     newTime = newTimeMatch ? newTimeMatch[1].trim() : null;
-// }
 
 
-// Objeto para almacenar el historial de conversación en memoria
-const conversationHistory: Record<string, any> = {};
-
-// Función para procesar mensajes
-// export async function processReservationQuery(userMessage: string, userId: string) {
-//     // Inicia historial de conversación si no existe para este usuario
-//     if (!conversationHistory[userId]) {
-//         conversationHistory[userId] = {
-//             messages: [],
-//             lastIntent: null,
-//             reservationDetails: { date: null, time: null }
-//         };
-//     }
-
-//     const history = conversationHistory[userId];
-
-//     // Almacena el mensaje en el historial
-//     history.messages.push({ user: userMessage });
-
-//     // Consulta a GPT con el mensaje y el historial de contexto
-//     const responseMessage = await validateData(userMessage);
-//     const { action, date, time } = await extractDetails(responseMessage!);
-
-//     // Si se identifican fecha y hora, guarda en el historial
-//     if (date && time) {
-//         history.reservationDetails.date = date;
-//         history.reservationDetails.time = time;
-//     }
-
-//     // Almacena la intención detectada para el siguiente mensaje
-//     history.lastIntent = action;
-
-//     // Ejemplo de respuesta usando historial (para mensajes de confirmación)
-//     if (action === "crear_reserva" && history.lastIntent === "consultar_disponibilidad" &&
-//         history.reservationDetails.date && history.reservationDetails.time) {
-//         const response = `Perfecto, se ha creado la reserva para el ${history.reservationDetails.date} a las ${history.reservationDetails.time}.`;
-//         history.messages.push({ gpt: response });
-//         return response;
-//     }
-
-//     // Guarda la respuesta de GPT en el historial
-//     history.messages.push({ gpt: responseMessage });
-//     return responseMessage;
-// }
-
-export async function moveReservation(date: string, time: string, newDate: string, newTime: string) {
+export async function moveReservation(date: string, time: string, newDate: string, newTime: string, user:string, service:string) {
     await deleteReservation(date, time)
-    await addReservation(newDate, newTime, "Guido cambio", "cena cambio")
+    await addReservation(newDate, newTime, user, service)
 }
 
 

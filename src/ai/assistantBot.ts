@@ -54,8 +54,7 @@ export async function processReservationQuery(userMessage: string) {
       }
       // TODO: 1)ajusstes aca
       case 'modificar_reserva': {
-        // TODO:: 2) agregar user y service
-        return await moveReservation(date!, time!, newDate!, newTime!)
+        return await moveReservation(date!, time!, newDate!, newTime!, user!, service!)
       }
       case 'horas_libres_en_dia':{
         return await getFreeHoursDay(date!)
