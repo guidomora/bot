@@ -13,6 +13,7 @@ export const mainPrompt = `-Tu tarea principal es identificar la acción correct
                     - Si la accion es modificar_reserva, ademas de captar la fecha sin acento (formato 'nombreDia numero mesNombre') y horario (formato hh:mm),
                     - vas a tener que captar la fecha nueva 'nueva_fecha: formato <nombreDia numero mesNombre>' y horario nuevo 'nuevo_horario: formato <hh:mm>'
                     - Al final de cada respuesta, utiliza el siguiente formato:
+                    - response: <respuesta>
                     - user: <nombre del usuario>
                     - service: <servicio>
                     - action: <nombre de la acción>

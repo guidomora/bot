@@ -2,6 +2,7 @@ import { checkHourDay, deleteReservation, getFreeHoursDay } from "../services/re
 import { extractDetails, handleCreateReservation, moveReservation } from "./actions/actions";
 import { mainPrompt } from "./helpersChat/prompts";
 import { openai } from "./openaiClient";
+import { BotResponses } from "./responses/botResponses";
 
 
 
@@ -9,6 +10,9 @@ import { openai } from "./openaiClient";
 // FIXME: 3) hacer algo para que el servicio en caso de un restaurante no lo tenga que procesar, seria util en otro rubro
 
 export async function processReservationQuery(userMessage: string) {
+
+  const botResponse = new BotResponses() 
+
   try {
     // Realiza la llamada a la API de OpenAI sin streaming
     const response = await openai.chat.completions.create({
@@ -28,17 +32,17 @@ export async function processReservationQuery(userMessage: string) {
     const {action, date, time, user, service, newDate, newTime, singleLineMessage} = await extractDetails(gptResponse!)
     
 
-    console.log({
-      userMessage,
-      singleLineMessage,
-      action,
-      date,
-      time,
-      user,
-      service,
-      newDate,
-      newTime
-    });
+    // console.log({
+    //   userMessage,
+    //   singleLineMessage,
+    //   action,
+    //   date,
+    //   time,
+    //   user,
+    //   service,
+    //   newDate,
+    //   newTime
+    // });
 
     switch(action){
       case 'crear_reserva':{
@@ -57,7 +61,7 @@ export async function processReservationQuery(userMessage: string) {
         return await moveReservation(date!, time!, newDate!, newTime!, user!, service!)
       }
       case 'horas_libres_en_dia':{
-        return await getFreeHoursDay(date!)
+        return await botResponse.freeHoursDay(singleLineMessage!, date!)
       }
       default:{
         return gptResponse

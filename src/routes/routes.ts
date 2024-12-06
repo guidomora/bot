@@ -27,8 +27,8 @@ export class BotRoutes {
         router.get('/available', serverController.checkHourAvailability)
         router.delete('/reservation', serverController.deleteReservation)
         // -------------------------------
-        // router.get('/message', twilioController.testMsg)
-        // router.post('/message', twilioController.getMsgs)
+        router.get('/message', twilioController.testMsg)
+        router.post('/message', twilioController.getMsgs)
 
         // ---------------------------------------
         router.post('/interactions', twilioController.interactWithBot)

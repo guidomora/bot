@@ -452,7 +452,7 @@ export async function deleteReservation(date: string, time: string) {
         });
 
         console.log(`Reserva eliminada ${date} a las ${time}`);
-        return { date, time };
+        return `Reserva cancelada ${date} a las ${time}`;
       }
     }
 
