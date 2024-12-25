@@ -77,6 +77,73 @@ export async function addReservation(date: string, time: string, customer: strin
   }
 }
 
+export async function addMissingCustomerName(date: string, time: string, customer: string) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const spreadsheetId = sheetId;
+  const range = 'Sheet1!A:B';
+
+  try {
+    // Obtener todas las filas en las columnas A y B (fecha y hora)
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+      majorDimension: 'ROWS',
+    });
+
+    const rows = response.data.values || [];
+
+    // Recorrer las filas y comparar los valores de la columna A y B
+    for (let i = 0; i < rows.length; i++) {
+      const [dateInSheet, timeInSheet] = rows[i];
+
+      // Verificar si la fecha y hora coinciden
+      if (dateInSheet === date && timeInSheet === time) {
+        const rowNumber = i + 1; // Google Sheets usa 1-based index
+
+        // Crear una solicitud batchUpdate para actualizar la columna C
+        const batchUpdateRequest = {
+          requests: [
+            {
+              updateCells: {
+                range: {
+                  sheetId: 0, // El ID de la hoja (puedes obtenerlo desde el sheetId)
+                  startRowIndex: rowNumber - 1, // Ajustado para 0-based index
+                  endRowIndex: rowNumber,
+                  startColumnIndex: 2, // Columna C (A = 0, B = 1, C = 2)
+                  endColumnIndex: 3, // Solo Columna C
+                },
+                rows: [
+                  {
+                    values: [
+                      { userEnteredValue: { stringValue: customer } }, // Cliente en columna C
+                    ],
+                  },
+                ],
+                fields: 'userEnteredValue',
+              },
+            },
+          ],
+        };
+
+        // Ejecutar la actualización en batch
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId,
+          requestBody: batchUpdateRequest,
+        });
+
+        console.log(`Nombre de cliente añadido para ${date} a las ${time}: ${customer}`);
+        return `Cliente añadido para ${date} a las ${time}: ${customer}`;
+      }
+    }
+
+    console.log('No se encontró una fila que coincida con la fecha y hora.');
+    return 'La fecha o el horario solicitado para esa reserva no se encuentra disponible.';
+  } catch (error) {
+    console.error('Error al añadir el nombre del cliente:', error);
+    throw error;
+  }
+}
+
 
 
 // GET

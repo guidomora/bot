@@ -26,6 +26,7 @@ export class BotRoutes {
         router.get('/resevationsDays', serverController.getReservationsForNextDays)
         router.get('/available', serverController.checkHourAvailability)
         router.delete('/reservation', serverController.deleteReservation)
+
         // -------------------------------
         router.get('/message', twilioController.testMsg)
         router.post('/message', twilioController.getMsgs)
@@ -33,7 +34,10 @@ export class BotRoutes {
         // ---------------------------------------
         router.post('/interactions', twilioController.interactWithBot)
 
-
+        // ---------------------------------------
+        // TODO:
+        // Missing datacases // future Add
+        router.post('/customerName', serverController.customerName)
 
         return router
     }

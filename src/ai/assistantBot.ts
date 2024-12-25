@@ -32,18 +32,6 @@ export async function processReservationQuery(userMessage: string) {
     const {action, date, time, user, service, newDate, newTime, singleLineMessage} = await extractDetails(gptResponse!)
     
 
-    // console.log({
-    //   userMessage,
-    //   singleLineMessage,
-    //   action,
-    //   date,
-    //   time,
-    //   user,
-    //   service,
-    //   newDate,
-    //   newTime
-    // });
-
     switch(action){
       case 'crear_reserva':{
         
