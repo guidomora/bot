@@ -1,6 +1,6 @@
 
 import MessagingResponse from "twilio/lib/twiml/MessagingResponse"
-import { createMessage } from "../../services/twilioServices/twilioServices"
+import { createMessage, processIncomingMessage } from "../../services/twilioServices/twilioServices"
 import { Request, Response } from "express"
 import { processReservationQuery } from "../../ai/assistantBot"
 
@@ -11,19 +11,25 @@ export class TwilioControllers {
         res.status(200).json(result)
     }
 
+
+    // Remember to set ngrok to the port 3001 and put it in the twilio console
     public getMsgs = async (req: Request, res: Response) => {
-        const twilioMessage = req.body.Body; // Mensaje recibido en el body
-        const fromNumber = req.body.From; // Número del remitente
-        
-        console.log(`Mensaje recibido de ${fromNumber}: ${twilioMessage}`);
+        try {
+          const from = req.body.From; // Número del remitente
+          const body = req.body.Body; // Mensaje enviado por el usuario
       
-        // Puedes enviar una respuesta de vuelta al usuario si quieres
-        const twiml = new MessagingResponse();
-        twiml.message("Gracias por tu mensaje, pronto te responderemos.");
+          // Procesar el mensaje recibido
+          const twimlResponse = await processIncomingMessage(from, body);  // Asegúrate de esperar la respuesta
       
-        res.writeHead(200, { "Content-Type": "text/xml" });
-        res.end(twiml.toString());
-    }
+          // Enviar respuesta a Twilio
+          res.writeHead(200, { 'Content-Type': 'text/xml' });
+          res.end(twimlResponse);  // Responder con la respuesta procesada
+        } catch (error) {
+          console.error('Error procesando el mensaje:', error);
+          res.status(500).json({ message: 'Error interno del servidor' });
+        }
+      };
+      
 
     public interactWithBot = async (req: Request, res: Response) => {
         const {body} = req
