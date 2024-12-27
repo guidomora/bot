@@ -23,14 +23,13 @@ export const processIncomingMessage = async (from: string, body: string) => {
 
   try {
     // Llama a processReservationQuery con el mensaje del usuario
-    await processReservationQuery(body);
-
-    // Asegúrate de que dialogue sea un string antes de enviarlo a Twilio
-
+    const dialogue = await processReservationQuery(body);  // Espera a que se resuelva
 
     // Genera la respuesta de Twilio con el contenido del diálogo
     const twiml = new MessagingResponse();
-    twiml.message("procesando......");  // Asegúrate de pasar un string
+    
+    // Si 'dialogue' no es un string, asigna un mensaje por defecto
+    twiml.message(dialogue!.toString());  // Asegúrate de pasar un string
 
     // Retorna la respuesta formateada en Twilio
     return twiml.toString();
@@ -43,8 +42,10 @@ export const processIncomingMessage = async (from: string, body: string) => {
       "Lo sentimos, ocurrió un problema al procesar tu mensaje. Por favor, inténtalo nuevamente más tarde."
     );
 
+    // Retorna la respuesta de error
     return twiml.toString();
   }
 };
+
 
 

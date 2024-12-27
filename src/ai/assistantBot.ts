@@ -32,6 +32,8 @@ export async function processReservationQuery(userMessage: string) {
 
     const { action, date, time, user, service, newDate, newTime, singleLineMessage } = await extractDetails(gptResponse!)
 
+    console.log(gptResponse);
+    
 
     switch (action) {
       case 'crear_reserva': {
@@ -52,6 +54,7 @@ export async function processReservationQuery(userMessage: string) {
         return await botResponse.freeHoursDay(singleLineMessage!, date!)
       }
       default: {
+        // TODO: que devuelva la respuesta de GPT pero sin los datos faltantes
         // Si no se encuentra una acción específica, devuelve la respuesta de GPT
         return gptResponse || "Lo siento, no pude entender tu solicitud.";
       }
