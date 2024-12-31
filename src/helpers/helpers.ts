@@ -7,9 +7,11 @@ export const createOneDay = (fromThisDay: number = 0) => {
   const dayName = daysOfWeek[today.getDay()]
   const dayNumber = today.getDate()
   const monthName = months[today.getMonth()]
+  const year = today.getFullYear()
+  const ddmm = today.toLocaleDateString()
   
 
-  const day = `${dayName} ${dayNumber} ${monthName}`
+  const day = `${dayName} ${dayNumber} ${monthName} ${year} ${ddmm}`
   console.log(dayName);
   return day
 }
@@ -80,10 +82,10 @@ export const repeatDay = () => {
 
 export const getNextDate = async (date: string) => {
   const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-  const daysOfWeek = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+  const daysOfWeek = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 
   // Extraer el día y el mes de la fecha recibida
-  const [onlyDay, dayNumber, monthName] = date.split(" ");
+  const [onlyDay, dayNumber, monthName, formattedDate] = date.split(" ");
 
   // Crear un objeto Date con la fecha recibida
   const monthIndex = months.findIndex(month => month === monthName);
@@ -92,7 +94,11 @@ export const getNextDate = async (date: string) => {
     throw new Error('Mes no válido');
   }
 
-  const currentDate = new Date(new Date().getFullYear(), monthIndex, parseInt(dayNumber));
+  // Obtener el año de la fecha recibida (del último componente, en formato "dd/mm/yyyy")
+  const [day, month, year] = formattedDate.split("/").map(Number);
+
+  // Crear la fecha a partir del formato recibido
+  const currentDate = new Date(year, month - 1, day);
 
   // Sumar un día a la fecha
   do {
@@ -103,26 +109,62 @@ export const getNextDate = async (date: string) => {
   const newDay = daysOfWeek[currentDate.getDay()]; // Nuevo día de la semana
   const newDayNumber = currentDate.getDate(); // Nuevo número de día
   const newMonthName = months[currentDate.getMonth()]; // Nuevo mes
+  const newYear = currentDate.getFullYear(); // Nuevo año
+  const formattedNewDate = currentDate.toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+  });
 
-
-  return `${newDay} ${newDayNumber} ${newMonthName}`; // Devolver la fecha en el formato deseado
+  // Devolver la fecha en el formato deseado
+  return `${newDay} ${newDayNumber} ${newMonthName} ${formattedNewDate}`;
 };
 
-
 export const repeatDayNew = async (date: string) => {
-  const day = await getNextDate(date)
+  const day = await getNextDate(date);
   const days: string[][] = [];
   const scheduleList: string[] = ["", "", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", ""];
 
   // Llenamos el array con los días y el horario para cada fila
   scheduleList.forEach(schedule => {
-    if (schedule == '') {
-      days.push(["", schedule])
+    if (schedule === '') {
+      days.push(["", schedule]);
     } else days.push([day, schedule]);
-  })
+  });
 
-
-
-  return days
+  return days;
 };
 
+// pasa la fecha a formato un estandar
+export function toStandardFormat(inputDate: string): string {
+  const daysOfWeek = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  const months = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  ];
+
+  const dateRegex = /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/; // Matches dd/mm/yyyy
+
+  if (dateRegex.test(inputDate)) {
+    // Caso "31/12/2024"
+    const [_, day, month, year] = inputDate.match(dateRegex) || [];
+    const parsedDate = new Date(`${year}-${month}-${day}`);
+    const dayOfWeek = daysOfWeek[parsedDate.getDay()];
+    const monthName = months[parsedDate.getMonth()];
+    return `${dayOfWeek} ${day} ${monthName} ${day}/${month}/${year}`;
+  }
+
+  const naturalRegex = /\b(\w+)\s(\d{1,2})\s(\w+)/; // Matches "martes 31 diciembre"
+  if (naturalRegex.test(inputDate)) {
+    // Caso "martes 31 diciembre"
+    const [_, dayOfWeek, day, monthName] = inputDate.match(naturalRegex) || [];
+    const monthIndex = months.indexOf(monthName.toLowerCase());
+    if (monthIndex !== -1) {
+      const today = new Date();
+      const year = today.getFullYear(); // Suponemos el año actual
+      return `${dayOfWeek} ${day} ${monthName} ${day}/${monthIndex + 1}/${year}`;
+    }
+  }
+
+  return ""; // Retorna vacío si no coincide con ningún formato válido
+}

@@ -5,8 +5,6 @@ import { openai } from "../openaiClient";
 export async function handleCreateReservation(date: string, time: string, user: string, service:string) {
     const isAvailable = await checkHourDay(date, time);
     if (isAvailable) {
-        // const customer = "Guido";
-        // const service = "cenita";
         await addReservation(date, time, user, service);
         return `Reserva confirmada para ${date} a las ${time}. ¡Gracias por reservar con nosotros!`;
     } else {

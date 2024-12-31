@@ -8,9 +8,9 @@ export const getExpressionToday = () => {
     const dayName = daysOfWeek[today.getDay()]
     const dayNumber = today.getDate()
     const monthName = months[today.getMonth()]
-    
+    const formattedDay = today.toLocaleDateString()
   
-    const day = `${dayName} ${dayNumber} ${monthName}`
+    const day = `${dayName} ${dayNumber} ${monthName} ${formattedDay}`
     console.log(day);
     return day
 }
@@ -41,8 +41,13 @@ export const getExpressionTomorrow = async (date: string) => {
     const newDay = daysOfWeek[currentDate.getDay()]; // Nuevo día de la semana
     const newDayNumber = currentDate.getDate(); // Nuevo número de día
     const newMonthName = months[currentDate.getMonth()]; // Nuevo mes
+    const formattedDate = currentDate.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
   
-    console.log(`${newDay} ${newDayNumber} ${newMonthName}`);
+    console.log(`${newDay} ${newDayNumber} ${newMonthName} ${formattedDate}`);
     
-    return `${newDay} ${newDayNumber} ${newMonthName}`; // Devolver la fecha en el formato deseado
+    return `${newDay} ${newDayNumber} ${newMonthName} ${formattedDate}`; // Devolver la fecha en el formato deseado
   };

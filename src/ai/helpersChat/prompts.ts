@@ -17,7 +17,7 @@ export const mainPrompt = `-Tu tarea principal es identificar la acción correct
                     - user: <nombre del usuario>
                     - service: <servicio>
                     - action: <nombre de la acción>
-                    - fecha: <nombreDia numero mesNombre> (o null si no está presente) las fechas van sin acento ejemplo: miercoles 30 octubre
+                    - fecha: <nombreDia numero mesNombre dd/mm/yyyy> (o null si no está presente) las fechas van sin acento ejemplo: miercoles 30 octubre 30/10/2024
                     - horario: <hh:mm> (o null si no está presente)
                     - nueva_fecha: <nombreDia numero mesNombre> (solo si es "modificar_reserva", o null si no está presente)
                     - nuevo_horario: <hh:mm> (solo si es "modificar_reserva", o null si no está presente)`

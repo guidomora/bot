@@ -1,7 +1,7 @@
 import { envs } from "../../config/envs";
 import { google } from 'googleapis';
 import auth from '../../data/sheetsConnection';
-import { createOneDay, generateFutureDays } from "../../helpers/helpers";
+import { createOneDay, generateFutureDays, toStandardFormat } from "../../helpers/helpers";
 
 
 const sheetId = envs.SPREADSHEET_ID
@@ -10,6 +10,7 @@ const sheetId = envs.SPREADSHEET_ID
 // Adds a reservation or update reservation
 // TODO: ver tema de la hora, si habria que hacer algo para que solo se ponga el numero (14) en vez de ej 14:00
 export async function addReservation(date: string, time: string, customer: string, service: string) {
+  const standardDate = toStandardFormat(date);
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId;
   const range = 'Sheet1!A:B';
@@ -25,11 +26,14 @@ export async function addReservation(date: string, time: string, customer: strin
     const rows = response.data.values || [];
 
     // Recorrer las filas y comparar los valores de la columna A y B
+    console.log("date:", date.trim(), "time:", time.trim());
+    
     for (let i = 0; i < rows.length; i++) {
-      const [dateInSheet, timeInSheet] = rows[i];
+      const [dateInSheet, timeInSheet] = rows[i].map(value => value.trim()); // Eliminar espacios
 
       // Verificar si la fecha y hora coinciden
-      if (dateInSheet === date && timeInSheet === time) {
+
+      if (dateInSheet === standardDate.trim() && timeInSheet === time.trim()) {
         const rowNumber = i + 1; // Google Sheets usa 1-based index
 
         // Crear una solicitud batchUpdate
@@ -42,20 +46,20 @@ export async function addReservation(date: string, time: string, customer: strin
                   startRowIndex: rowNumber - 1, // Ajustado para 0-based index
                   endRowIndex: rowNumber,
                   startColumnIndex: 2, // Columna C (A = 0, B = 1, C = 2)
-                  endColumnIndex: 4 // Columna D
+                  endColumnIndex: 4, // Columna D
                 },
                 rows: [
                   {
                     values: [
                       { userEnteredValue: { stringValue: customer } }, // Cliente en columna C
                       { userEnteredValue: { stringValue: service } },  // Servicio en columna D
-                    ]
-                  }
+                    ],
+                  },
                 ],
-                fields: 'userEnteredValue'
-              }
-            }
-          ]
+                fields: 'userEnteredValue',
+              },
+            },
+          ],
         };
 
         // Ejecutar la actualización en batch
@@ -76,6 +80,7 @@ export async function addReservation(date: string, time: string, customer: strin
     throw error;
   }
 }
+
 
 export async function addMissingCustomerName(date: string, time: string, customer: string) {
   const sheets = google.sheets({ version: 'v4', auth });
@@ -405,6 +410,15 @@ export async function checkHourDay(date: string, time: string) {
   let freeHours: string[][] = [];
 
   try {
+    // Convertir la fecha ingresada al formato estándar
+    const standardDate = toStandardFormat(date);
+    if (!standardDate) {
+      console.log("Formato de fecha inválido.");
+      return false;
+    }
+
+    console.log("Fecha estándar procesada:", standardDate);
+
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
@@ -414,18 +428,16 @@ export async function checkHourDay(date: string, time: string) {
     const rows = response.data.values || [];
     const reservationRows: string[] = [];
 
-    // Recorrer las filas y obtener los números de las filas que coinciden con la fecha
+    // Recorrer las filas y buscar coincidencias
     for (let i = 0; i < rows.length; i++) {
       const [dateInSheet, timeInSheet] = rows[i];
 
-      // Verificar si la fecha coincide
-      if (dateInSheet === date && timeInSheet === time) {
+      if (dateInSheet === standardDate && timeInSheet === time) {
         const dataNumber = i + 1; // Guardar el número de la fila (1-indexed)
         reservationRows.push(`Sheet1!A${dataNumber}:D${dataNumber}`); // Agregar rango para batchGet
       }
     }
 
-    // Si no hay filas que coincidan con la fecha, devolver un array vacío
     if (reservationRows.length === 0) {
       console.log('El horario o fecha solicitado no existe.');
       return false;
@@ -441,27 +453,25 @@ export async function checkHourDay(date: string, time: string) {
     const batchRows = batchResponse.data.valueRanges || [];
     for (const range of batchRows) {
       const row = range.values || [];
-      // Comprobar si la tercera columna está vacía (no hay cliente asignado)
       if (row.length > 0 && row[0][2] === undefined && row[0][3] === undefined) {
-        freeHours.push(row[0]); // Añadir la fila al array de horas libres
+        freeHours.push(row[0]);
       }
     }
 
-    
     if (freeHours.length === 0) {
       console.log('No se encontraron horarios libres para esa fecha.');
-      return false
+      return false;
     }
 
-    
-    console.log("true:",freeHours);
-    
+    console.log("true:", freeHours);
     return true;
   } catch (error) {
     console.error('Error al obtener horarios libres:', error);
     throw error;
   }
 }
+
+
 
 // DELETE
 
