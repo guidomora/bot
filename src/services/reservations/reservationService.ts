@@ -475,10 +475,21 @@ export async function checkHourDay(date: string, time: string) {
 
 // DELETE
 
-export async function deleteReservation(date: string, time: string) {
+export async function deleteReservation(date: string, time: string, user: string) {
+  if (!date) {
+    return "Error: La fecha es requerida.";
+  }
+  if (!time) {
+    return "Error: La hora es requerida.";
+  }
+  if (!user) {
+    return "Error: El usuario es requerido.";
+  }
+  
+  const standardDate = toStandardFormat(date);
   const sheets = google.sheets({ version: 'v4', auth });
   const spreadsheetId = sheetId;
-  const range = 'Sheet1!A:B';
+  const range = 'Sheet1!A:C';
 
   try {
     const response = await sheets.spreadsheets.values.get({
@@ -490,10 +501,10 @@ export async function deleteReservation(date: string, time: string) {
     const rows = response.data.values || [];
 
     for (let i = 0; i < rows.length; i++) {
-      const [dateInSheet, timeInSheet] = rows[i];
-
+      const [dateInSheet, timeInSheet, userInSheet] = rows[i];
+      
       // Verificar si la fecha y hora coinciden
-      if (dateInSheet === date && timeInSheet === time) {
+      if (dateInSheet === standardDate && timeInSheet === time && userInSheet === user) {
         const rowNumber = i + 1; // Google Sheets usa 1-based index
 
         // Crear una solicitud batchUpdate
@@ -528,13 +539,13 @@ export async function deleteReservation(date: string, time: string) {
           requestBody: batchUpdateRequest,
         });
 
-        console.log(`Reserva eliminada ${date} a las ${time}`);
+        console.log(`Reserva cancelada ${date} a las ${time}`);
         return `Reserva cancelada ${date} a las ${time}`;
       }
     }
 
     console.log('No se encontró una fila que coincida con la fecha y hora.');
-    return null;
+    return "La fecha, hora o usuario son necesarios";
   } catch (error) {
     console.error('Error al añadir la reserva:', error);
     throw error;

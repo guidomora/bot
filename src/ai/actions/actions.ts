@@ -37,50 +37,6 @@ async function validateData(message: string) {
     }
 }
 
-// TODO: 3)original
-//   RegEx para extraer los parametros y validarlos
-// export async function extractDetails(message: string) {
-//     let action: string | null = null;
-//     let date: string | null = null;
-//     let time: string | null = null;
-//     let newDay: string | null = null;
-//     let newTime: string | null = null
-//     const maxAttempts = 3;
-//     let attempts = 0;
-
-//     // Primer análisis de la respuesta original para obtener acción, fecha y horario
-//     const initialMatch = message.match(/action: (\w+)/);
-//     const initialDateMatch = message.match(/fecha: (\w+\s\d{1,2}\s\w+)/);
-//     const initialTimeMatch = message.match(/horario: ([\d]{2}:[\d]{2})/);
-//     const initialNewDayMatch = message.match(/newFecha: (\w+\s\d{1,2}\s\w+)/);
-//     const initialNewTimeMatch = message.match(/newHora: ([\d]{2}:[\d]{2})/);
-
-//     action = initialMatch ? initialMatch[1] : null;
-//     date = initialDateMatch ? initialDateMatch[1].trim() : null;
-//     time = initialTimeMatch ? initialTimeMatch[1].trim() : null;
-
-//     // segundo analisis ya que puede ser que sean null
-//     while ((action === null || date === null || time === null) && attempts < maxAttempts) {
-//         const responseMessage = await validateData(message);
-
-//         const actionMatch = responseMessage!.match(/action: (\w+)/);
-//         const dateMatch = responseMessage!.match(/fecha: (\w+\s\d{1,2}\s\w+)/);
-//         const timeMatch = responseMessage!.match(/horario: ([\d]{2}:[\d]{2})/);
-
-//         action = actionMatch ? actionMatch[1] : action;
-//         date = dateMatch ? dateMatch[1].trim() : date;
-//         time = timeMatch ? timeMatch[1].trim() : time;
-
-//         console.log("Revalidando..........");
-//         attempts++;
-//     }
-
-//     return {
-//         action,
-//         date,
-//         time,
-//     };
-// }
 
 export async function extractDetails(message: string) {
     let action: string | null = null;
@@ -166,7 +122,7 @@ export async function extractDetails(message: string) {
 
 
 export async function moveReservation(date: string, time: string, newDate: string, newTime: string, user:string, service:string) {
-    await deleteReservation(date, time)
+    await deleteReservation(date, time, user)
     await addReservation(newDate, newTime, user, service)
 }
 

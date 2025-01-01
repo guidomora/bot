@@ -43,8 +43,7 @@ export async function processReservationQuery(userMessage: string) {
         return await checkHourDay(date!, time!)
       }
       case 'cancelar_reserva': {
-        // TODO:: 2) agregar user y service
-        return await deleteReservation(date!, time!)
+        return await deleteReservation(date!, time!, user!)
       }
       // TODO: 1)ajusstes aca
       case 'modificar_reserva': {
@@ -56,7 +55,7 @@ export async function processReservationQuery(userMessage: string) {
       default: {
         // TODO: que devuelva la respuesta de GPT pero sin los datos faltantes
         // Si no se encuentra una acción específica, devuelve la respuesta de GPT
-        return gptResponse || "Lo siento, no pude entender tu solicitud.";
+        return gptResponse;
       }
     }
   } catch (error) {

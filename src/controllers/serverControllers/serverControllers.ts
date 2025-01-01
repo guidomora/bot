@@ -39,8 +39,8 @@ export class ServerControllers {
     }
 
     public deleteReservation = async (req:Request, res:Response) => {
-        const {date, time} = req.body
-        const result = await deleteReservation(date, time)
+        const {date, time, user} = req.body
+        const result = await deleteReservation(date, time, user)
         res.status(200).json(result)
     }
 

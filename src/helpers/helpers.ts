@@ -135,7 +135,7 @@ export const repeatDayNew = async (date: string) => {
   return days;
 };
 
-// pasa la fecha a formato un estandar
+// pasa la fecha a formato un estandar "domingo 31 diciembre 31/12/2024" ejemplo
 export function toStandardFormat(inputDate: string): string {
   const daysOfWeek = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
   const months = [
